@@ -1,8 +1,15 @@
 import os
+from dataclasses import dataclass
 
 import torch
 from torch import Tensor, nn
 from transformers import AutoModel, AutoTokenizer
+
+
+@dataclass
+class FileFeatures:
+    path: str
+    features: Tensor
 
 
 class Feature(nn.Module):
@@ -20,7 +27,7 @@ class Feature(nn.Module):
             torch.randn(hidden_size, device=device)
         )
 
-    def forward(self, file_path: str):
+    def forward(self, file_path: str) -> FileFeatures:
         file_name = os.path.basename(file_path)
         name, extension = os.path.splitext(file_name)
 
@@ -35,12 +42,15 @@ class Feature(nn.Module):
         else:
             content_embedding = self.embed_str(content)
 
-        return torch.cat(
-            [
-                name_embedding,
-                extension_embedding,
-                content_embedding,
-            ]
+        features = [
+            name_embedding,
+            extension_embedding,
+            content_embedding,
+        ]
+
+        return FileFeatures(
+            path=file_path,
+            features=torch.cat(features),
         )
 
     def is_binary(self, file_path: str) -> bool:
