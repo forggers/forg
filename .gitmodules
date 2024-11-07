@@ -1,0 +1,3 @@
+[submodule "data/repos/react"]
+	path = data/repos/react
+	url = https://github.com/facebook/react.git
