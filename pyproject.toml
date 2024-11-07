@@ -1,0 +1,23 @@
+[project]
+name = "forg"
+version = "0.0.1"
+description = "Computing hierarchical embeddings of file contents using file system tree distance metrics"
+readme = "README.md"
+authors = [
+    { name="Alex Chen", email="azc2110@columbia.edu" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    # sort these alphabetically
+    "torch",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["forg"]
+
+[tool.isort]
+profile = "black"
