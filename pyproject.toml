@@ -5,6 +5,7 @@ description = "Computing hierarchical embeddings of file contents using file sys
 readme = "README.md"
 authors = [
     { name="Alex Chen", email="azc2110@columbia.edu" },
+    { name="Gilbert Yang", email="gy2322@columbia.edu"}
 ]
 requires-python = ">=3.11"
 dependencies = [
