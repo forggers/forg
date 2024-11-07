@@ -10,8 +10,11 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     # sort these alphabetically
+    "ipykernel",
+    "ipywidgets",
     "numpy",
     "torch",
+    "transformers",
 ]
 
 [build-system]
