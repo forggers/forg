@@ -9,5 +9,8 @@
       "source.organizeImports": "always",
       "source.unusedImports": "always"
     }
+  },
+  "search.exclude": {
+    "data/repos": true
   }
 }
