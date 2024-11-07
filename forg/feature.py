@@ -13,6 +13,13 @@ class Feature(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name, device_map=device)
 
+        hidden_size = self.model.config.hidden_size
+
+        # global learned content embedding for binary files
+        self.binary_content_embedding = nn.Parameter(
+            torch.randn(hidden_size, device=device)
+        )
+
     def forward(self, file_path: str):
         file_name = os.path.basename(file_path)
         name, extension = os.path.splitext(file_name)
@@ -22,7 +29,11 @@ class Feature(nn.Module):
 
         name_embedding = self.embed_str(name)
         extension_embedding = self.embed_str(extension)
-        content_embedding = self.embed_str(content)
+
+        if self.is_binary(file_path):
+            content_embedding = self.binary_content_embedding
+        else:
+            content_embedding = self.embed_str(content)
 
         return torch.cat(
             [
@@ -31,6 +42,13 @@ class Feature(nn.Module):
                 content_embedding,
             ]
         )
+
+    def is_binary(self, file_path: str) -> bool:
+        with open(file_path, "rb") as file:
+            for byte in file.read(1024):
+                if byte == 0:
+                    return True
+        return False
 
     def embed_str(self, s: str) -> Tensor:
         """Returns the average of the token embeddings."""
