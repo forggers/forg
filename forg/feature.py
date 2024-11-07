@@ -13,10 +13,17 @@ class FileFeatures:
 
 
 class Feature(nn.Module):
-    def __init__(self, model_name: str = "google/gemma-2-2b", device: str = "cpu"):
+    def __init__(
+        self,
+        model_name: str = "google/gemma-2-2b",
+        device: str = "cpu",
+        max_content_length: int = 4096,
+    ):
         super().__init__()
 
         self.device = device
+        self.max_content_length = max_content_length
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name, device_map=device)
 
@@ -39,6 +46,7 @@ class Feature(nn.Module):
         else:
             with open(file_path, "r") as file:
                 content = file.read()
+                content = content[: self.max_content_length]
             content_embedding = self.embed_str(content)
 
         features = [
