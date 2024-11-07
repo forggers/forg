@@ -31,15 +31,14 @@ class Feature(nn.Module):
         file_name = os.path.basename(file_path)
         name, extension = os.path.splitext(file_name)
 
-        with open(file_path, "r") as file:
-            content = file.read()
-
         name_embedding = self.embed_str(name)
         extension_embedding = self.embed_str(extension)
 
         if self.is_binary(file_path):
             content_embedding = self.binary_content_embedding
         else:
+            with open(file_path, "r") as file:
+                content = file.read()
             content_embedding = self.embed_str(content)
 
         features = [
