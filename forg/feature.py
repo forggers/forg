@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import cast
 
 import torch
 from torch import Tensor, nn
@@ -45,13 +46,15 @@ class Feature(nn.Module):
     def forward(self, files: list[RawFile]) -> list[FileFeatures]:
         names = [file.name for file in files]
         extensions = [file.extension for file in files]
-        text_contents = [file.content for file in files if file.content is not None]
 
         name_embeddings = self.__embed_str_batched(files, names, "name")
         extension_embeddings = self.__embed_str_batched(files, extensions, "extension")
 
+        text_files = [file for file in files if file.content is not None]
+        text_contents = [cast(str, file.content) for file in text_files]
+
         text_content_embeddings = self.__embed_str_batched(
-            files, text_contents, "content"
+            text_files, text_contents, "content"
         )
         content_embeddings: list[Tensor] = []
 
