@@ -1,41 +1,12 @@
-import os
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 from torch import Tensor, nn
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer
 
-
-@dataclass
-class RawFile:
-    """File read from disk but not yet processed."""
-
-    path: str
-    name: str
-    extension: str
-    content: Optional[str]
-
-    def __init__(self, path: str):
-        self.path = path
-
-        file_name = os.path.basename(path)
-        self.name, self.extension = os.path.splitext(file_name)
-
-        if self.is_binary(path):
-            self.content = None
-        else:
-            with open(path, "r") as file:
-                self.content = file.read()
-
-    @staticmethod
-    def is_binary(path: str) -> bool:
-        with open(path, "rb") as file:
-            for byte in file.read(1024):
-                if byte == 0:
-                    return True
-        return False
+from .embedding_cache import EmbeddingCache
+from .file import RawFile
 
 
 @dataclass
@@ -47,6 +18,7 @@ class FileFeatures:
 class Feature(nn.Module):
     def __init__(
         self,
+        *,
         model_name: str = "google/gemma-2-2b",
         device: str = "cpu",
         embed_max_chars: int = 1024,
@@ -68,15 +40,19 @@ class Feature(nn.Module):
             torch.randn(hidden_size, device=device)
         )
 
+        self.cache = EmbeddingCache(model_name=model_name)
+
     def forward(self, files: list[RawFile]) -> list[FileFeatures]:
         names = [file.name for file in files]
         extensions = [file.extension for file in files]
         text_contents = [file.content for file in files if file.content is not None]
 
-        name_embeddings = self.embed_str_batched(names)
-        extension_embeddings = self.embed_str_batched(extensions)
+        name_embeddings = self.__embed_str_batched(files, names, "name")
+        extension_embeddings = self.__embed_str_batched(files, extensions, "extension")
 
-        text_content_embeddings = self.embed_str_batched(text_contents)
+        text_content_embeddings = self.__embed_str_batched(
+            files, text_contents, "content"
+        )
         content_embeddings: list[Tensor] = []
 
         for file in files:
@@ -95,19 +71,50 @@ class Feature(nn.Module):
             )
         ]
 
-    def embed_str_batched(self, strings: list[str]) -> list[Tensor]:
-        embeddings: list[Tensor] = []
+    def __embed_str_batched(
+        self, files: list[RawFile], strings: list[str], embedding_label: str
+    ) -> list[Tensor]:
+        cached_embeddings = [
+            self.cache.get(
+                file,
+                embedding_label=embedding_label,
+                embedding_input=s,
+                device=self.device,
+            )
+            for file, s in zip(files, strings)
+        ]
+
+        uncached_files = [f for f, e in zip(files, cached_embeddings) if e is None]
+        uncached_strings = [s for s, e in zip(strings, cached_embeddings) if e is None]
+        uncached_embeddings: list[Tensor] = []
+
         for i in tqdm(
-            range(0, len(strings), self.embed_batch_size),
+            range(0, len(uncached_strings), self.embed_batch_size),
             desc="Embedding batches",
         ):
-            batch = strings[i : i + self.embed_batch_size]
-            batch_embeddings = self.embed_str(batch)
-            embeddings.extend(batch_embeddings)
+            batch_files = uncached_files[i : i + self.embed_batch_size]
+            batch_strings = uncached_strings[i : i + self.embed_batch_size]
+            batch_embeddings = self.__embed_str(batch_strings)
+
+            uncached_embeddings.extend(batch_embeddings)
+
+            for f, s, emb in zip(batch_files, batch_strings, batch_embeddings):
+                self.cache.save(
+                    emb, f, embedding_label=embedding_label, embedding_input=s
+                )
+
+        embeddings: list[Tensor] = []
+
+        for cached_emb in cached_embeddings:
+            if cached_emb is not None:
+                embeddings.append(cached_emb)
+            else:
+                embeddings.append(uncached_embeddings.pop(0))
+
         return embeddings
 
     @torch.no_grad()
-    def embed_str(self, strings: list[str]) -> list[Tensor]:
+    def __embed_str(self, strings: list[str]) -> list[Tensor]:
         """
         Returns the average of the token embeddings.
         Takes in a batch of strings and returns a batch of embeddings.
