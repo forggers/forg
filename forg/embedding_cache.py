@@ -35,16 +35,31 @@ class EmbeddingCache:
         embedding_label: str,
         embedding_input: str,
     ) -> None:
+        cache_dir = self.__to_cache_dir(file)
         cache_file = self.__to_cache_file(file, embedding_label, embedding_input)
-        os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-        torch.save(embedding.cpu(), cache_file)
+        temp_file = self.__to_cache_temp_file(file)
+
+        os.makedirs(cache_dir, exist_ok=True)
+
+        # save file to temp first, then atomically move to cache file
+        try:
+            torch.save(embedding.cpu(), temp_file)
+            os.replace(temp_file, cache_file)
+        except Exception:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            raise
+
+    def __to_cache_dir(self, file: RawFile) -> str:
+        clean_model_name = self.model_name.replace("/", "_")
+        return os.path.join(self.cache_dir, clean_model_name, file.cache_path)
 
     def __to_cache_file(
         self, file: RawFile, embedding_label: str, embedding_input: str
     ) -> str:
-        clean_model_name = self.model_name.replace("/", "_")
         input_hash = hashlib.sha256(embedding_input.encode()).hexdigest()
         save_file = f"{embedding_label}_{input_hash}.pt"
-        return os.path.join(
-            self.cache_dir, clean_model_name, file.cache_path, save_file
-        )
+        return os.path.join(self.__to_cache_dir(file), save_file)
+
+    def __to_cache_temp_file(self, file: RawFile) -> str:
+        return os.path.join(self.__to_cache_dir(file), "__temp__.pt")
