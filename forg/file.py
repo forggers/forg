@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
+from torch import Tensor
+
 
 @dataclass
 class RawFile:
@@ -33,3 +35,9 @@ class RawFile:
                 if byte == 0:
                     return True
         return False
+
+
+@dataclass
+class FileFeatures:
+    path: str
+    features: Tensor

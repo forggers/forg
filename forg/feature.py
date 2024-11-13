@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import cast
 
 import torch
@@ -7,13 +6,7 @@ from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer
 
 from .embedding_cache import EmbeddingCache
-from .file import RawFile
-
-
-@dataclass
-class FileFeatures:
-    path: str
-    features: Tensor
+from .file import FileFeatures, RawFile
 
 
 class Feature(nn.Module):
