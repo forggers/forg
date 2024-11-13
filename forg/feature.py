@@ -29,12 +29,14 @@ class Feature(nn.Module):
 
         hidden_size = self.model.config.hidden_size
 
+        self.feature_size = hidden_size * 3
+
         # global learned content embedding for binary files
-        self.binary_content_embedding = nn.Parameter(
-            torch.randn(hidden_size, device=device)
-        )
+        self.binary_content_embedding = nn.Parameter(torch.randn(hidden_size))
 
         self.cache = EmbeddingCache(model_name=model_name)
+
+        self.to(device)
 
     def forward(self, files: list[RawFile]) -> list[FileFeatures]:
         names = [file.name for file in files]
