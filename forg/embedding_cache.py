@@ -52,7 +52,7 @@ class EmbeddingCache:
 
     def __to_cache_dir(self, file: RawFile) -> str:
         clean_model_name = self.model_name.replace("/", "_")
-        return os.path.join(self.cache_dir, clean_model_name, file.cache_path)
+        return os.path.join(self.cache_dir, clean_model_name, file.relative_path)
 
     def __to_cache_file(
         self, file: RawFile, embedding_label: str, embedding_input: str

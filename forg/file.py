@@ -10,14 +10,18 @@ class RawFile:
     """File read from disk but not yet processed."""
 
     path: str
-    cache_path: str
+    """Path of file on the current system."""
+    relative_path: str
+    """Path of file relative to the repo directory."""
     name: str
     extension: str
     content: Optional[str]
 
-    def __init__(self, *, path: str, cache_path: str):
-        self.path = path
-        self.cache_path = cache_path
+    def __init__(self, *, path: str, repo_dir: str):
+        repo_parent = os.path.dirname(repo_dir)
+
+        self.path = os.path.abspath(path)
+        self.relative_path = os.path.relpath(path, repo_parent)
 
         file_name = os.path.basename(path)
         self.name, self.extension = os.path.splitext(file_name)
@@ -40,4 +44,7 @@ class RawFile:
 @dataclass
 class FileFeatures:
     path: str
+    """Path of file on the current system."""
+    relative_path: str
+    """Path of file relative to the repo directory."""
     features: Tensor

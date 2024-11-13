@@ -60,6 +60,7 @@ class Feature(nn.Module):
         return [
             FileFeatures(
                 path=file.path,
+                relative_path=file.relative_path,
                 features=torch.cat([a, b, c]),
             )
             for file, a, b, c in zip(
