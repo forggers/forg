@@ -13,6 +13,7 @@ dependencies = [
     "accelerate",
     "ipykernel",
     "ipywidgets",
+    "matplotlib",
     "numpy",
     "torch",
     "transformers",
