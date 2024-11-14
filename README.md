@@ -14,3 +14,5 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+
+You will also need to add a Hugging Face token to `.env`. See `.env.example`.
