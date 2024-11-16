@@ -18,9 +18,12 @@ class RawFile:
     content: Optional[str]
 
     def __init__(self, *, path: str, repo_dir: str):
+        path = os.path.abspath(path)
+        repo_dir = os.path.abspath(repo_dir)
+
         repo_parent = os.path.dirname(repo_dir)
 
-        self.path = os.path.abspath(path)
+        self.path = path
         self.relative_path = os.path.relpath(path, repo_parent)
 
         file_name = os.path.basename(path)
@@ -29,8 +32,12 @@ class RawFile:
         if self.is_binary(path):
             self.content = None
         else:
-            with open(path, "r") as file:
-                self.content = file.read()
+            try:
+                with open(path, "r") as file:
+                    self.content = file.read()
+            except UnicodeDecodeError:
+                self.content = None
+                print(f"Could not decode {path} as text, so treating as binary...")
 
     @staticmethod
     def is_binary(path: str) -> bool:
@@ -46,5 +53,7 @@ class FileFeatures:
     path: str
     """Path of file on the current system."""
     relative_path: str
+    is_binary: bool
     """Path of file relative to the repo directory."""
     features: Tensor
+    """Contains placeholder zeros along content dimensions for binary files."""

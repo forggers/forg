@@ -1,12 +1,11 @@
-import torch
 from torch import Tensor, nn
 
-from .feature import Feature
+from .feature import FeatureExpansion
 from .file import FileFeatures
 
 
 class Embedding(nn.Module):
-    def __init__(self, *, feature: Feature, D: int, width: int, depth: int):
+    def __init__(self, *, expansion: FeatureExpansion, D: int, width: int, depth: int):
         """
         Uses a multi-layer perceptron to embed a file feature vector into a D-dimensional space.
 
@@ -19,9 +18,9 @@ class Embedding(nn.Module):
 
         super().__init__()
 
-        self.feature = feature
+        self.expansion = expansion
 
-        in_size = feature.feature_size
+        in_size = expansion.feature_size
         out_size = D
 
         layers = [nn.Linear(in_size, width), nn.ReLU()]
@@ -34,8 +33,8 @@ class Embedding(nn.Module):
 
         self.mlp = nn.Sequential(*layers)
 
-        self.to(feature.device)
+        self.to(expansion.device)
 
-    def forward(self, files: list[FileFeatures]) -> list[Tensor]:
-        features = torch.stack([file.features for file in files])
+    def forward(self, files: list[FileFeatures]) -> Tensor:
+        features = self.expansion.to_parameterized_features(files)
         return self.mlp(features)

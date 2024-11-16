@@ -9,7 +9,7 @@ from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
 
 
-class Feature(nn.Module):
+class FeatureExpansion(nn.Module):
     def __init__(
         self,
         *,
@@ -38,7 +38,7 @@ class Feature(nn.Module):
 
         self.to(device)
 
-    def forward(self, files: list[RawFile]) -> list[FileFeatures]:
+    def expand(self, files: list[RawFile]) -> list[FileFeatures]:
         names = [file.name for file in files]
         extensions = [file.extension for file in files]
 
@@ -55,7 +55,10 @@ class Feature(nn.Module):
 
         for file in files:
             if file.content is None:
-                content_embeddings.append(self.binary_content_embedding)
+                # placeholder zeros for binary files
+                content_embeddings.append(
+                    torch.zeros_like(self.binary_content_embedding)
+                )
             else:
                 content_embeddings.append(text_content_embeddings.pop(0))
 
@@ -63,12 +66,27 @@ class Feature(nn.Module):
             FileFeatures(
                 path=file.path,
                 relative_path=file.relative_path,
+                is_binary=file.content is None,
                 features=torch.cat([a, b, c]),
             )
             for file, a, b, c in zip(
                 files, name_embeddings, extension_embeddings, content_embeddings
             )
         ]
+
+    def to_parameterized_features(self, files: list[FileFeatures]) -> Tensor:
+        """
+        Returns a shape (n_files, feature_size) tensor where content dimensions of
+        binary files are replaced with the global content embedding.
+        """
+        features: list[Tensor] = []
+        for file in files:
+            if file.is_binary:
+                non_content = file.features[: -self.binary_content_embedding.shape[0]]
+                features.append(torch.cat([non_content, self.binary_content_embedding]))
+            else:
+                features.append(file.features)
+        return torch.stack(features)
 
     def __embed_str_batched(
         self, files: list[RawFile], strings: list[str], embedding_label: str
