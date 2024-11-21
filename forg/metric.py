@@ -1,4 +1,5 @@
 import os
+from multiprocessing import Pool
 
 import torch
 from torch import Tensor
@@ -6,10 +7,10 @@ from torch import Tensor
 from .file import FileFeatures
 
 
-def tree_distance(file1: FileFeatures, file2: FileFeatures) -> int:
+def tree_distance(relative_path1: str, relative_path2: str) -> int:
     """Computes file tree distance between two files."""
-    path1 = file1.relative_path.split(os.path.sep)
-    path2 = file2.relative_path.split(os.path.sep)
+    path1 = relative_path1.split(os.path.sep)
+    path2 = relative_path2.split(os.path.sep)
     # remove common prefix
     while path1 and path2 and path1[0] == path2[0]:
         path1.pop(0)
@@ -24,8 +25,15 @@ def tree_distance_matrix(files: list[FileFeatures]) -> Tensor:
 
     print("Computing tree distance matrix...")
 
-    matrix = torch.zeros(n, n, dtype=torch.int32, device=device)
-    for i, file1 in enumerate(files):
-        for j, file2 in enumerate(files):
-            matrix[i, j] = tree_distance(file1, file2)
+    # parallelize tree distance computation
+    args = [
+        (file1.relative_path, file2.relative_path) for file1 in files for file2 in files
+    ]
+
+    with Pool() as pool:
+        distances = pool.starmap(tree_distance, args)
+
+    distances = torch.tensor(distances, dtype=torch.int32, device=device)
+    matrix = distances.view(n, n)
+
     return matrix
