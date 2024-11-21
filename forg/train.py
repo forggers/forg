@@ -18,11 +18,21 @@ def train(
     train_split: float = 0.8,
     epochs: int = 1000,
     lr: float = 1e-4,
+    expansion_model_name: Annotated[
+        str, typer.Option(help="Model name for feature expansion")
+    ] = "google/gemma-2-2b",
+    expansion_batch_size: Annotated[
+        int, typer.Option(help="Batch size for feature expansion")
+    ] = 8,
     D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
 ):
-    expansion = FeatureExpansion(device=detect_device())
+    expansion = FeatureExpansion(
+        model_name=expansion_model_name,
+        embed_batch_size=expansion_batch_size,
+        device=detect_device(),
+    )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)
 
     random.seed(42)
