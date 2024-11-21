@@ -22,6 +22,8 @@ def tree_distance_matrix(files: list[FileFeatures]) -> Tensor:
     n = len(files)
     device = files[0].features.device
 
+    print("Computing tree distance matrix...")
+
     matrix = torch.zeros(n, n, dtype=torch.int32, device=device)
     for i, file1 in enumerate(files):
         for j, file2 in enumerate(files):
