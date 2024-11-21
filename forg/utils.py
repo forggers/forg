@@ -1,6 +1,20 @@
 import os
 
+import torch
+
 from .file import RawFile
+
+
+def detect_device() -> torch.device:
+    """
+    Use the GPU if available, otherwise use the CPU.
+    """
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
+    else:
+        return torch.device("cpu")
 
 
 def load_files(repo_dir: str) -> list[RawFile]:

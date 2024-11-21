@@ -6,7 +6,7 @@ from tqdm import tqdm
 from .costs import DistanceMSECost
 from .embedding import Embedding
 from .feature import FeatureExpansion
-from .utils import load_files
+from .utils import detect_device, load_files
 
 
 def train(
@@ -16,9 +16,8 @@ def train(
     train_split: float = 0.8,
     epochs: int = 1000,
     lr: float = 1e-4,
-    device: str = "cpu",
 ):
-    expansion = FeatureExpansion(device=device)
+    expansion = FeatureExpansion(device=detect_device())
     embedding = Embedding(expansion=expansion, D=8, width=512, depth=2)
 
     random.seed(42)

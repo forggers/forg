@@ -14,7 +14,7 @@ class FeatureExpansion(nn.Module):
         self,
         *,
         model_name: str = "google/gemma-2-2b",
-        device: str = "cpu",
+        device: torch.device,
         embed_max_chars: int = 1024,
         embed_batch_size: int = 8,
     ):

@@ -20,7 +20,7 @@ class EmbeddingCache:
         *,
         embedding_label: str,
         embedding_input: str,
-        device: str,
+        device: torch.device,
     ) -> Tensor | None:
         cache_file = self.__to_cache_file(file, embedding_label, embedding_input)
         if os.path.exists(cache_file):
