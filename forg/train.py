@@ -18,7 +18,7 @@ def train(
     train_split: float = 0.8,
     epochs: int = 1000,
     lr: float = 1e-4,
-    D: Annotated[int, typer.Option(help="Embedding dimension")] = 8,
+    D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
 ):
