@@ -1,6 +1,8 @@
 import random
 
 import torch
+import typer
+from torch.utils.tensorboard import SummaryWriter  # type: ignore
 from tqdm import tqdm
 
 from .costs import DistanceMSECost
@@ -10,7 +12,6 @@ from .utils import detect_device, load_files
 
 
 def train(
-    *,
     repo_dir: str,
     sample_size: int = 1000,
     train_split: float = 0.8,
@@ -33,18 +34,22 @@ def train(
 
     optimizer = torch.optim.Adam(embedding.parameters(), lr=lr)
 
-    train_costs: list[float] = []
-    test_costs: list[float] = []
+    writer = SummaryWriter()
 
     for epoch in tqdm(range(epochs)):
         train_c = train_cost(embedding(train_files))
         train_c.backward()
         optimizer.step()
         optimizer.zero_grad()
-        train_costs.append(train_c.item())
+        writer.add_scalar("Cost/train", train_c, epoch)
 
         with torch.no_grad():
             test_c = test_cost(embedding(test_files))
-            test_costs.append(test_c.item())
+            writer.add_scalar("Cost/test", test_c, epoch)
 
-    return files, embedding, train_costs, test_costs
+    writer.close()
+    return files, embedding
+
+
+if __name__ == "__main__":
+    typer.run(train)

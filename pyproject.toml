@@ -15,8 +15,10 @@ dependencies = [
     "ipywidgets",
     "matplotlib",
     "numpy",
+    "tensorboard",
     "torch",
     "transformers",
+    "typer",
 ]
 
 [build-system]
