@@ -35,13 +35,17 @@ def train(
     )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)
 
-    random.seed(42)
     raw_files = load_files(repo_dir)
-    raw_files = random.sample(raw_files, sample_size)
+
+    if sample_size < len(raw_files):
+        random.seed(42)
+        raw_files = random.sample(raw_files, sample_size)
+
+    print("# of files:", len(raw_files))
 
     files = expansion.expand(raw_files)
-    train_files = files[: int(sample_size * train_split)]
-    test_files = files[int(sample_size * train_split) :]
+    train_files = files[: int(len(files) * train_split)]
+    test_files = files[int(len(files) * train_split) :]
 
     train_cost = DistanceMSECost(train_files)
     test_cost = DistanceMSECost(test_files)
