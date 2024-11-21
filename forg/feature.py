@@ -1,6 +1,7 @@
 from typing import cast
 
 import torch
+from dotenv import load_dotenv
 from torch import Tensor, nn
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer
@@ -24,6 +25,7 @@ class FeatureExpansion(nn.Module):
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
+        load_dotenv()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name, device_map=device)
 
