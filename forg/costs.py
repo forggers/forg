@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 
 from .file import FileFeatures
-from .metric import tree_distance_matrix
+from .tree_metric import tree_distance_matrix
 
 
 class DistanceMSECost:
