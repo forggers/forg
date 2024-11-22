@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from .costs import DistanceMSECost
 from .embedding import Embedding
+from .embedding_metric import EuclideanMetric
 from .feature import FeatureExpansion
 from .utils import detect_device, load_files
 
@@ -34,6 +35,7 @@ def train(
         device=detect_device(),
     )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)
+    embedding_metric = EuclideanMetric()
 
     raw_files = load_files(repo_dir)
 
@@ -47,8 +49,8 @@ def train(
     train_files = files[: int(len(files) * train_split)]
     test_files = files[int(len(files) * train_split) :]
 
-    train_cost = DistanceMSECost(train_files)
-    test_cost = DistanceMSECost(test_files)
+    train_cost = DistanceMSECost(embedding_metric, train_files)
+    test_cost = DistanceMSECost(embedding_metric, test_files)
 
     optimizer = torch.optim.Adam(embedding.parameters(), lr=lr)
 

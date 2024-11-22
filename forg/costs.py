@@ -1,24 +1,46 @@
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 
+from .embedding_metric import EmbeddingMetric
 from .file import FileFeatures
 from .tree_metric import tree_distance_matrix
 
 
-class DistanceMSECost:
+class Cost(nn.Module):
     def __init__(self, files: list[FileFeatures]):
+        super().__init__()
+        self.device = files[0].features.device
+
+    def forward(self, embeddings: Tensor) -> Tensor:
+        raise NotImplementedError
+
+
+class DistanceMSECost(Cost):
+    def __init__(self, embedding_metric: EmbeddingMetric, files: list[FileFeatures]):
+        super().__init__(files)
+
         self.tree_dist_matrix = tree_distance_matrix(files)
         """Shape: (# files, # files)"""
+        self.embedding_metric = embedding_metric
 
-    def __call__(self, embeddings: Tensor) -> Tensor:
+        self.to(self.device)
+
+    def forward(self, embeddings: Tensor) -> Tensor:
         """Embeddings: shape (# files, embedding_size)"""
-        dist_matrix = torch.cdist(embeddings, embeddings)
+        dist_matrix = self.embedding_metric.distance_matrix(embeddings)
         squared_error = (dist_matrix - self.tree_dist_matrix) ** 2
         return squared_error.mean()
 
 
-class TSNECost:
-    def __init__(self, files: list[FileFeatures], perplexity: float = 30):
+class TSNECost(Cost):
+    def __init__(
+        self,
+        embedding_metric: EmbeddingMetric,
+        files: list[FileFeatures],
+        perplexity: float = 30,
+    ):
+        super().__init__(files)
+
         n = len(files)
         tree_dist_matrix = tree_distance_matrix(files)
 
@@ -28,10 +50,13 @@ class TSNECost:
 
         # symmetrize: p_ij = (p_{j|i} + p_{i|j}) / (2 * N)
         self.p = (p_asym + p_asym.t()) / (2 * n)
+        self.embedding_metric = embedding_metric
 
-    def __call__(self, embeddings: Tensor) -> Tensor:
+        self.to(self.device)
+
+    def forward(self, embeddings: Tensor) -> Tensor:
         """Embeddings: shape (# files, embedding_size)"""
-        dist_matrix = torch.cdist(embeddings, embeddings)
+        dist_matrix = self.embedding_metric.distance_matrix(embeddings)
 
         # q_{ij} = (1 + dist^2)^-1 / normalization
         q = 1 / (1 + dist_matrix**2)
