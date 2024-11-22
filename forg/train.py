@@ -1,4 +1,5 @@
 import random
+from enum import Enum
 from typing import Annotated
 
 import torch
@@ -8,9 +9,14 @@ from tqdm import tqdm
 
 from .costs import DistanceMSECost
 from .embedding import Embedding
-from .embedding_metric import EuclideanMetric
+from .embedding_metric import EuclideanMetric, HyperbolicMetric
 from .feature import FeatureExpansion
 from .utils import detect_device, load_files
+
+
+class EmbeddingMetricType(Enum):
+    EUCLIDEAN = "euclidean"
+    HYPERBOLIC = "hyperbolic"
 
 
 def train(
@@ -28,6 +34,7 @@ def train(
     D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
+    metric: EmbeddingMetricType = EmbeddingMetricType.EUCLIDEAN,
 ):
     expansion = FeatureExpansion(
         model_name=expansion_model_name,
@@ -35,7 +42,11 @@ def train(
         device=detect_device(),
     )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)
-    embedding_metric = EuclideanMetric()
+
+    if metric == EmbeddingMetricType.EUCLIDEAN:
+        embedding_metric = EuclideanMetric()
+    elif metric == EmbeddingMetricType.HYPERBOLIC:
+        embedding_metric = HyperbolicMetric()
 
     raw_files = load_files(repo_dir)
 
