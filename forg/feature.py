@@ -4,7 +4,7 @@ import torch
 from dotenv import load_dotenv
 from torch import Tensor, nn
 from tqdm import tqdm
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
@@ -26,15 +26,14 @@ class FeatureExpansion(nn.Module):
         self.embed_batch_size = embed_batch_size
 
         load_dotenv()
+        config = AutoConfig.from_pretrained(model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name, device_map=device)
 
-        hidden_size = self.model.config.hidden_size
-
-        self.feature_size = hidden_size * 3
+        self.feature_size = config.hidden_size * 3
 
         # global learned content embedding for binary files
-        self.binary_content_embedding = nn.Parameter(torch.randn(hidden_size))
+        self.binary_content_embedding = nn.Parameter(torch.randn(config.hidden_size))
 
         self.cache = EmbeddingCache(model_name=model_name)
 
