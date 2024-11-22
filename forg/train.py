@@ -21,7 +21,7 @@ class EmbeddingMetricType(Enum):
 
 def train(
     repo_dir: str,
-    sample_size: int = 1000,
+    samples: int = 1000,
     train_split: float = 0.8,
     epochs: int = 1000,
     lr: float = 1e-4,
@@ -50,9 +50,9 @@ def train(
 
     raw_files = load_files(repo_dir)
 
-    if sample_size < len(raw_files):
+    if samples < len(raw_files):
         random.seed(42)
-        raw_files = random.sample(raw_files, sample_size)
+        raw_files = random.sample(raw_files, samples)
 
     print("# of files:", len(raw_files))
 
