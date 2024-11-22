@@ -29,7 +29,7 @@ class EmbeddingMetric(nn.Module):
         # repeat like 123123123...
         flat_embeddings1 = embeddings.repeat(n, 1)
         # repeat like 111222333...
-        flat_embeddings2 = embeddings.repeat_interleave(n).view(n * n, -1)
+        flat_embeddings2 = embeddings.repeat(1, 1, n).view(n * n, -1)
         flat_distances = self.distance(flat_embeddings1, flat_embeddings2)
         return flat_distances.view(n, n)
 
