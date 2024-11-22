@@ -1,3 +1,4 @@
+import os
 from typing import cast
 
 import torch
@@ -18,6 +19,9 @@ class ModelFactory:
     """
 
     def __init__(self, *, model_name: str, device: torch.device):
+        # set this explicitly to avoid warning messages
+        os.environ["TOKENIZERS_PARALLELISM"] = "true"
+
         self.model_name = model_name
         self.device = device
         self.tokenizer = None
