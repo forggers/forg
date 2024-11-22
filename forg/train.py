@@ -49,23 +49,26 @@ def train(
     train_files = files[: int(len(files) * train_split)]
     test_files = files[int(len(files) * train_split) :]
 
-    train_cost = DistanceMSECost(embedding_metric, train_files)
-    test_cost = DistanceMSECost(embedding_metric, test_files)
+    train_cost = DistanceMSECost(embedding, embedding_metric, train_files)
+    test_cost = DistanceMSECost(embedding, embedding_metric, test_files)
 
-    optimizer = torch.optim.Adam(embedding.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(train_cost.parameters(), lr=lr)
 
     writer = SummaryWriter()
 
     for epoch in tqdm(range(epochs)):
-        train_c = train_cost(embedding(train_files))
+        train_c = train_cost(train_files)
         train_c.backward()
         optimizer.step()
         optimizer.zero_grad()
         writer.add_scalar("Cost/train", train_c, epoch)
 
         with torch.no_grad():
-            test_c = test_cost(embedding(test_files))
+            test_c = test_cost(test_files)
             writer.add_scalar("Cost/test", test_c, epoch)
+
+        if isinstance(embedding_metric, HyperbolicMetric):
+            writer.add_scalar("Scale", embedding_metric.scale(), epoch)
 
     writer.close()
     return files, embedding
