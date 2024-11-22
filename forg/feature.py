@@ -10,6 +10,31 @@ from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
 
 
+class ModelFactory:
+    """
+    Loads the model + tokenizer only if necessary.
+    The model + tokenizer do not persist outside this instance.
+    """
+
+    def __init__(self, *, model_name: str, device: torch.device):
+        self.model_name = model_name
+        self.device = device
+        self.tokenizer = None
+        self.model = None
+
+    def get_tokenizer(self):
+        if self.tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        return self.tokenizer
+
+    def get_model(self):
+        if self.model is None:
+            self.model = AutoModel.from_pretrained(
+                self.model_name, device_map=self.device
+            )
+        return self.model
+
+
 class FeatureExpansion(nn.Module):
     def __init__(
         self,
@@ -21,14 +46,13 @@ class FeatureExpansion(nn.Module):
     ):
         super().__init__()
 
+        self.model_name = model_name
         self.device = device
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
         load_dotenv()
         config = AutoConfig.from_pretrained(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name, device_map=device)
 
         self.feature_size = config.hidden_size * 3
 
@@ -40,17 +64,21 @@ class FeatureExpansion(nn.Module):
         self.to(device)
 
     def expand(self, files: list[RawFile]) -> list[FileFeatures]:
+        factory = ModelFactory(model_name=self.model_name, device=self.device)
+
         names = [file.name for file in files]
         extensions = [file.extension for file in files]
 
-        name_embeddings = self.__embed_str_batched(files, names, "name")
-        extension_embeddings = self.__embed_str_batched(files, extensions, "extension")
+        name_embeddings = self.__embed_str_batched(factory, files, names, "name")
+        extension_embeddings = self.__embed_str_batched(
+            factory, files, extensions, "extension"
+        )
 
         text_files = [file for file in files if file.content is not None]
         text_contents = [cast(str, file.content) for file in text_files]
 
         text_content_embeddings = self.__embed_str_batched(
-            text_files, text_contents, "content"
+            factory, text_files, text_contents, "content"
         )
         content_embeddings: list[Tensor] = []
 
@@ -90,7 +118,11 @@ class FeatureExpansion(nn.Module):
         return torch.stack(features)
 
     def __embed_str_batched(
-        self, files: list[RawFile], strings: list[str], embedding_label: str
+        self,
+        factory: ModelFactory,
+        files: list[RawFile],
+        strings: list[str],
+        embedding_label: str,
     ) -> list[Tensor]:
         cached_embeddings = [
             self.cache.get(
@@ -112,7 +144,7 @@ class FeatureExpansion(nn.Module):
         ):
             batch_files = uncached_files[i : i + self.embed_batch_size]
             batch_strings = uncached_strings[i : i + self.embed_batch_size]
-            batch_embeddings = self.__embed_str(batch_strings)
+            batch_embeddings = self.__embed_str(factory, batch_strings)
 
             uncached_embeddings.extend(batch_embeddings)
 
@@ -132,7 +164,7 @@ class FeatureExpansion(nn.Module):
         return embeddings
 
     @torch.no_grad()
-    def __embed_str(self, strings: list[str]) -> list[Tensor]:
+    def __embed_str(self, factory: ModelFactory, strings: list[str]) -> list[Tensor]:
         """
         Returns the average of the token embeddings.
         Takes in a batch of strings and returns a batch of embeddings.
@@ -140,12 +172,11 @@ class FeatureExpansion(nn.Module):
 
         strings = [s[: self.embed_max_chars] for s in strings]
 
-        inputs = self.tokenizer(
-            strings,
-            return_tensors="pt",
-            padding=True,
-        ).to(self.device)
+        tokenizer = factory.get_tokenizer()
+        model = factory.get_model()
 
-        embeddings: Tensor = self.model(**inputs).last_hidden_state
+        inputs = tokenizer(strings, return_tensors="pt", padding=True).to(self.device)
+
+        embeddings: Tensor = model(**inputs).last_hidden_state
         embeddings = embeddings.mean(dim=1)
         return [embedding for embedding in embeddings]
