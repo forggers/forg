@@ -8,6 +8,7 @@ from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
+from .utils import empty_cache
 
 
 class ModelFactory:
@@ -33,6 +34,13 @@ class ModelFactory:
                 self.model_name, device_map=self.device
             )
         return self.model
+
+    def __del__(self):
+        if self.tokenizer is not None:
+            del self.tokenizer
+        if self.model is not None:
+            del self.model
+        empty_cache()
 
 
 class FeatureExpansion(nn.Module):

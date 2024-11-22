@@ -17,6 +17,13 @@ def detect_device() -> torch.device:
         return torch.device("cpu")
 
 
+def empty_cache():
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+
+
 def load_files(repo_dir: str) -> list[RawFile]:
     raw_files: list[RawFile] = []
 
