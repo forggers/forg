@@ -16,3 +16,5 @@ pip install -e .
 ```
 
 You will also need to add a Hugging Face token to `.env`. See `.env.example`.
+For running on a cloud instance, you may want to set the `HF_HOME` environment
+variable to a persistent location (defaults to `~/.cache/huggingface`).
