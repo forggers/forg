@@ -51,7 +51,11 @@ class HyperbolicMetric(EmbeddingMetric):
     """
 
     def __init__(
-        self, *, initial_scale: float = 0.1, fixed_scale: bool = False, epsilon=1e-8
+        self,
+        *,
+        initial_scale: float = 1.0,
+        fixed_scale: bool = False,
+        epsilon=1e-8,
     ):
         super().__init__()
 
