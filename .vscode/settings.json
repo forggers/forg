@@ -10,6 +10,7 @@
       "source.unusedImports": "always"
     }
   },
+  "git.detectSubmodules": false,
   "search.exclude": {
     "data/repos": true
   }
