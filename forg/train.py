@@ -2,6 +2,7 @@ import random
 from enum import Enum
 from typing import Annotated
 
+import matplotlib.pyplot as plt
 import torch
 import typer
 from torch.utils.tensorboard import SummaryWriter  # type: ignore
@@ -11,7 +12,8 @@ from .costs import DistanceMSECost
 from .embedding import Embedding
 from .embedding_metric import EuclideanMetric, HyperbolicMetric
 from .feature import FeatureExpansion
-from .utils import detect_device, load_files
+from .file import FileFeatures
+from .utils import detect_device, load_files, save_plt_to_img
 
 
 class EmbeddingMetricType(Enum):
@@ -35,6 +37,7 @@ def train(
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
     metric: EmbeddingMetricType = EmbeddingMetricType.EUCLIDEAN,
+    plot_interval: int = 100,
 ):
     expansion = FeatureExpansion(
         model_name=expansion_model_name,
@@ -67,6 +70,16 @@ def train(
 
     writer = SummaryWriter()
 
+    @torch.no_grad()
+    def get_embeddings_img(files: list[FileFeatures]):
+        embeddings = embedding(files).cpu().detach()
+        plt.figure()
+        plt.scatter(embeddings[:, 0], embeddings[:, 1], s=1)
+        plt.title("Embeddings")
+        plt.xlabel("Dimension 0")
+        plt.ylabel("Dimension 1")
+        return save_plt_to_img()
+
     for epoch in tqdm(range(epochs)):
         train_c = train_cost(train_files)
         train_c.backward()
@@ -80,6 +93,10 @@ def train(
 
         if isinstance(embedding_metric, HyperbolicMetric):
             writer.add_scalar("Scale", embedding_metric.scale(), epoch)
+
+        if epoch % plot_interval == 0:
+            writer.add_image("Embeddings/train", get_embeddings_img(train_files), epoch)
+            writer.add_image("Embeddings/test", get_embeddings_img(test_files), epoch)
 
     writer.close()
     return files, embedding

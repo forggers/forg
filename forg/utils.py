@@ -1,6 +1,11 @@
+import io
 import os
 
+import matplotlib.pyplot as plt
 import torch
+import torchvision.transforms as transforms
+from PIL import Image
+from torch import Tensor
 
 from .file import RawFile
 
@@ -33,3 +38,17 @@ def load_files(repo_dir: str) -> list[RawFile]:
             raw_files.append(RawFile(path=path, repo_dir=repo_dir))
 
     return raw_files
+
+
+def save_plt_to_img() -> Tensor:
+    # save the plot to a buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close()
+
+    # convert the buffer to an image tensor
+    image = Image.open(buf)
+    image = transforms.ToTensor()(image)
+    buf.close()
+    return image
