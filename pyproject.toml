@@ -34,4 +34,4 @@ packages = ["forg"]
 profile = "black"
 
 [tool.pyright]
-exclude = ["**/__pycache__", "data", "embedding_cache"]
+exclude = ["**/.*", "**/__pycache__", "data", "embedding_cache"]

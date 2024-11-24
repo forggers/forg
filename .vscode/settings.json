@@ -1,6 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "python.analysis.typeCheckingMode": "standard",
   "python.analysis.autoImportCompletions": true,
   "python.analysis.importFormat": "relative",
   "[python]": {
@@ -12,6 +11,11 @@
   },
   "git.detectSubmodules": false,
   "search.exclude": {
-    "data/repos": true
+    "data/repos": true,
+    "embedding_cache": true
+  },
+  "files.watcherExclude": {
+    "data/repos": true,
+    "embedding_cache": true
   }
 }
