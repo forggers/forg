@@ -8,7 +8,7 @@ import typer
 from torch.utils.tensorboard import SummaryWriter  # type: ignore
 from tqdm import tqdm
 
-from .costs import DistanceMSECost
+from .costs import DistanceMSECost, TSNECost
 from .embedding import Embedding
 from .embedding_metric import EuclideanMetric, HyperbolicMetric
 from .feature import FeatureExpansion
@@ -19,6 +19,11 @@ from .utils import detect_device, load_files, save_plt_to_img
 class EmbeddingMetricType(Enum):
     EUCLIDEAN = "euclidean"
     HYPERBOLIC = "hyperbolic"
+
+
+class CostType(Enum):
+    DISTANCE_MSE = "distance_mse"
+    TSNE = "tsne"
 
 
 def train(
@@ -37,6 +42,7 @@ def train(
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
     metric: EmbeddingMetricType = EmbeddingMetricType.EUCLIDEAN,
+    cost: CostType = CostType.DISTANCE_MSE,
     plot_interval: int = 100,
 ):
     expansion = FeatureExpansion(
@@ -63,8 +69,13 @@ def train(
     train_files = files[: int(len(files) * train_split)]
     test_files = files[int(len(files) * train_split) :]
 
-    train_cost = DistanceMSECost(embedding, embedding_metric, train_files)
-    test_cost = DistanceMSECost(embedding, embedding_metric, test_files)
+    if cost == CostType.DISTANCE_MSE:
+        CostClass = DistanceMSECost
+    elif cost == CostType.TSNE:
+        CostClass = TSNECost
+
+    train_cost = CostClass(embedding, embedding_metric, train_files)
+    test_cost = CostClass(embedding, embedding_metric, test_files)
 
     optimizer = torch.optim.Adam(train_cost.parameters(), lr=lr)
 
