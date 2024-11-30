@@ -89,6 +89,7 @@ def train(
         plt.title("Embeddings")
         plt.xlabel("Dimension 0")
         plt.ylabel("Dimension 1")
+        plt.gca().set_aspect("equal")
         return save_plt_to_img()
 
     for epoch in tqdm(range(epochs)):
