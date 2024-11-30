@@ -60,9 +60,8 @@ def train(
 
     raw_files = load_files(repo_dir)
 
-    if samples < len(raw_files):
-        random.seed(42)
-        raw_files = random.sample(raw_files, samples)
+    random.seed(42)
+    raw_files = random.sample(raw_files, min(samples, len(raw_files)))
 
     print("# of files:", len(raw_files))
 
