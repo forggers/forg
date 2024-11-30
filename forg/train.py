@@ -16,12 +16,12 @@ from .file import FileFeatures
 from .utils import detect_device, load_files, save_plt_to_img
 
 
-class EmbeddingMetricType(Enum):
+class EmbeddingMetricType(str, Enum):
     EUCLIDEAN = "euclidean"
     HYPERBOLIC = "hyperbolic"
 
 
-class CostType(Enum):
+class CostType(str, Enum):
     DISTANCE_MSE = "distance_mse"
     TSNE = "tsne"
 
