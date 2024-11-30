@@ -1,3 +1,4 @@
+import math
 import random
 from enum import Enum
 from typing import Annotated
@@ -79,6 +80,11 @@ def train(
 
     optimizer = torch.optim.Adam(train_cost.parameters(), lr=lr)
 
+    best_test_c = math.inf
+    best_epoch = 0
+    best_embedding_state = embedding.state_dict()
+    best_embedding_metric_state = embedding_metric.state_dict()
+
     writer = SummaryWriter()
 
     @torch.no_grad()
@@ -110,7 +116,19 @@ def train(
             writer.add_image("Embeddings/train", get_embeddings_img(train_files), epoch)
             writer.add_image("Embeddings/test", get_embeddings_img(test_files), epoch)
 
+        if test_c < best_test_c:
+            best_test_c = test_c
+            best_epoch = epoch
+            best_embedding_state = embedding.state_dict()
+            best_embedding_metric_state = embedding_metric.state_dict()
+
     writer.close()
+
+    embedding.load_state_dict(best_embedding_state)
+    embedding_metric.load_state_dict(best_embedding_metric_state)
+
+    print("Best epoch:", best_epoch)
+
     return embedding, embedding_metric, files
 
 
