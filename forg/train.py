@@ -111,7 +111,7 @@ def train(
             writer.add_image("Embeddings/test", get_embeddings_img(test_files), epoch)
 
     writer.close()
-    return files, embedding
+    return embedding, embedding_metric, files
 
 
 if __name__ == "__main__":
