@@ -15,6 +15,7 @@ def cluster_to_disk(
     embedding_metric: EmbeddingMetric,
     files: list[FileFeatures],
     destination_dir: str,
+    *,
     num_dirs: int = 10,
 ):
     shutil.rmtree(destination_dir, ignore_errors=True)
