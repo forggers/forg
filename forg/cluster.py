@@ -1,5 +1,6 @@
 import hashlib
 import os
+import shutil
 from typing import cast
 
 from scipy.cluster.hierarchy import ClusterNode, linkage, to_tree
@@ -16,6 +17,8 @@ def cluster_to_disk(
     destination_dir: str,
     num_dirs: int = 10,
 ):
+    shutil.rmtree(destination_dir, ignore_errors=True)
+
     embeddings = embedding(files)
     dist_matrix = embedding_metric.distance_matrix(embeddings)
     dist_matrix = dist_matrix.cpu().detach()
