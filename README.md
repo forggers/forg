@@ -37,3 +37,5 @@ Notes:
 
 To track runs, install the Tensorboard VS Code plugin, then use the command
 palette to "Launch Tensorboard".
+
+See `notebooks/` for some example notebooks.
