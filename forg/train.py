@@ -1,5 +1,6 @@
 import math
 import random
+from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated
 
@@ -11,10 +12,19 @@ from tqdm import tqdm
 
 from .costs import DistanceMSECost, TSNECost
 from .embedding import Embedding
-from .embedding_metric import EuclideanMetric, HyperbolicMetric
+from .embedding_metric import EmbeddingMetric, EuclideanMetric, HyperbolicMetric
 from .feature import FeatureExpansion
 from .file import FileFeatures
 from .utils import detect_device, load_files, save_plt_to_img
+
+
+@dataclass
+class TrainResult:
+    embedding: Embedding
+    embedding_metric: EmbeddingMetric
+    files: list[FileFeatures]
+    train_files: list[FileFeatures]
+    test_files: list[FileFeatures]
 
 
 class EmbeddingMetricType(str, Enum):
@@ -128,7 +138,13 @@ def train(
 
     print("Best epoch:", best_epoch)
 
-    return embedding, embedding_metric, files
+    return TrainResult(
+        embedding=embedding,
+        embedding_metric=embedding_metric,
+        files=files,
+        train_files=train_files,
+        test_files=test_files,
+    )
 
 
 if __name__ == "__main__":
