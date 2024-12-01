@@ -34,3 +34,6 @@ Notes:
 - 2000 samples is good for testing; adjust # of epochs as you see fit
 - Set `--expansion-batch-size 32` if running on a 40GB GPU for faster feature
   expansion
+
+To track runs, install the Tensorboard VS Code plugin, then use the command
+palette to "Launch Tensorboard".
