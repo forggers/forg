@@ -55,11 +55,14 @@ class HyperbolicMetric(EmbeddingMetric):
         *,
         initial_scale: float = 1.0,
         fixed_scale: bool = False,
+        scale_floor: float | None = 1e-2,
         epsilon=1e-8,
     ):
         super().__init__()
 
         self.epsilon = epsilon
+        if scale_floor is not None:
+            self.scale_floor = torch.Tensor([scale_floor])[0]
 
         if fixed_scale:
             self.log_scale = math.log(initial_scale)
@@ -68,7 +71,10 @@ class HyperbolicMetric(EmbeddingMetric):
 
     def scale(self) -> Tensor | float:
         if isinstance(self.log_scale, Tensor):
-            return self.log_scale.exp()
+            if self.scale_floor is not None:
+                return torch.max(self.scale_floor, self.log_scale.exp())
+            else:
+                return self.log_scale.exp()
         else:
             return math.exp(self.log_scale)
 
