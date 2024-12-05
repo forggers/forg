@@ -6,3 +6,7 @@ __pycache__
 dev
 runs
 embedding_cache
+
+.ipynb_checkpoints
+*.pickle
+
