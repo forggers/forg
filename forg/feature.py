@@ -81,7 +81,7 @@ class FeatureExpansion(nn.Module):
 
         config = AutoConfig.from_pretrained(model_name)
 
-        self.feature_size = config.hidden_size * 3
+        self.feature_size = config.hidden_size * 2
 
         # global learned content embedding for binary files
         self.binary_content_embedding = nn.Parameter(torch.randn(config.hidden_size))
@@ -93,13 +93,9 @@ class FeatureExpansion(nn.Module):
     def expand(self, files: list[RawFile]) -> list[FileFeatures]:
         factory = ModelFactory(model_name=self.model_name, device=self.device)
 
-        names = [file.name for file in files]
-        extensions = [file.extension for file in files]
-
+        # embed file name and extension together
+        names = [file.name + file.extension for file in files]
         name_embeddings = self.__embed_str_batched(factory, files, names, "name")
-        extension_embeddings = self.__embed_str_batched(
-            factory, files, extensions, "extension"
-        )
 
         text_files = [file for file in files if file.content is not None]
         text_contents = [cast(str, file.content) for file in text_files]
@@ -123,11 +119,9 @@ class FeatureExpansion(nn.Module):
                 path=file.path,
                 relative_path=file.relative_path,
                 is_binary=file.content is None,
-                features=torch.cat([a, b, c]),
+                features=torch.cat([a, b]),
             )
-            for file, a, b, c in zip(
-                files, name_embeddings, extension_embeddings, content_embeddings
-            )
+            for file, a, b in zip(files, name_embeddings, content_embeddings)
         ]
 
     def to_parameterized_features(self, files: list[FileFeatures]) -> Tensor:
