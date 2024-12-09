@@ -53,6 +53,10 @@ def train(
         ExpansionMode,
         typer.Option(help="How to interpret model output for feature expansion"),
     ] = ExpansionMode.HIDDEN_AVG,
+    expansion_suffix: Annotated[
+        str,
+        typer.Option(help="Useful for PromptEOL. See FeatureExpansion in feature.py"),
+    ] = "",
     D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
@@ -62,8 +66,9 @@ def train(
 ):
     expansion = FeatureExpansion(
         model_name=expansion_model_name,
-        embed_batch_size=expansion_batch_size,
         mode=expansion_mode,
+        embed_suffix=expansion_suffix,
+        embed_batch_size=expansion_batch_size,
         device=detect_device(),
     )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)

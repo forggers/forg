@@ -68,14 +68,22 @@ class FeatureExpansion(nn.Module):
         model_name: str = "google/gemma-2-2b",
         device: torch.device,
         mode: ExpansionMode = ExpansionMode.HIDDEN_AVG,
+        embed_suffix: str = "",
         embed_max_chars: int = 1024,
         embed_batch_size: int = 8,
     ):
+        """
+        To implement PromptEOL (https://arxiv.org/pdf/2307.16645), use a config like:
+        - mode=ExpansionMode.HIDDEN_LAST
+        - embed_suffix="\n\n-----\n\nThe file above most likely belongs to a folder named (one word): "
+        """
+
         super().__init__()
 
         self.model_name = model_name
         self.device = device
         self.mode = mode
+        self.embed_suffix = embed_suffix
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
@@ -193,7 +201,7 @@ class FeatureExpansion(nn.Module):
         Takes in a batch of strings and returns a batch of embeddings.
         """
 
-        strings = [s[: self.embed_max_chars] for s in strings]
+        strings = [s[: self.embed_max_chars] + self.embed_suffix for s in strings]
 
         tokenizer = factory.get_tokenizer()
         model = factory.get_model()
