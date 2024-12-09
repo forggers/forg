@@ -1,3 +1,5 @@
+from enum import Enum
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,6 +15,13 @@ from transformers import AutoConfig, AutoModel, AutoTokenizer
 from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
 from .utils import empty_cache
+
+
+class EmbedMode(str, Enum):
+    HIDDEN_AVG = "hidden-avg"
+    """Average of last hidden layer token embeddings."""
+    HIDDEN_LAST = "hidden-last"
+    """Last hidden layer token embeddings."""
 
 
 class ModelFactory:
@@ -33,6 +42,7 @@ class ModelFactory:
     def get_tokenizer(self):
         if self.tokenizer is None:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.tokenizer.pad_token = self.tokenizer.eos_token
         return self.tokenizer
 
     def get_model(self):
@@ -40,6 +50,7 @@ class ModelFactory:
             self.model = AutoModel.from_pretrained(
                 self.model_name, device_map=self.device
             )
+            self.model.eval()
         return self.model
 
     def __del__(self):
@@ -56,6 +67,7 @@ class FeatureExpansion(nn.Module):
         *,
         model_name: str = "google/gemma-2-2b",
         device: torch.device,
+        embed_mode: EmbedMode = EmbedMode.HIDDEN_AVG,
         embed_max_chars: int = 1024,
         embed_batch_size: int = 8,
     ):
@@ -63,6 +75,7 @@ class FeatureExpansion(nn.Module):
 
         self.model_name = model_name
         self.device = device
+        self.embed_mode = embed_mode
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
@@ -138,6 +151,8 @@ class FeatureExpansion(nn.Module):
         strings: list[str],
         embedding_label: str,
     ) -> list[Tensor]:
+        embedding_label = f"{embedding_label}_{self.embed_mode.value}"
+
         cached_embeddings = [
             self.cache.get(
                 file,
@@ -190,7 +205,21 @@ class FeatureExpansion(nn.Module):
         model = factory.get_model()
 
         inputs = tokenizer(strings, return_tensors="pt", padding=True).to(self.device)
+        non_pad_token_counts = inputs.attention_mask.sum(dim=1)
 
-        embeddings: Tensor = model(**inputs).last_hidden_state
-        embeddings = embeddings.mean(dim=1)
-        return [embedding for embedding in embeddings]
+        # shape: (batch_size, seq_len, hidden_size)
+        hidden_states = model(**inputs).last_hidden_state
+
+        embeddings: list[Tensor] = []
+
+        for hidden, count in zip(hidden_states, non_pad_token_counts):
+            match self.embed_mode:
+                case EmbedMode.HIDDEN_AVG:
+                    non_pad_hidden = hidden[:count]  # shape: (seq_len, hidden_size)
+                    avg = non_pad_hidden.mean(dim=0)  # shape: (hidden_size)
+                    embeddings.append(avg)
+                case EmbedMode.HIDDEN_LAST:
+                    last_hidden = hidden[count - 1]  # shape: (hidden_size)
+                    embeddings.append(last_hidden)
+
+        return embeddings
