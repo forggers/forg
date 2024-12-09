@@ -17,7 +17,7 @@ from .file import FileFeatures, RawFile
 from .utils import empty_cache
 
 
-class EmbedMode(str, Enum):
+class ExpansionMode(str, Enum):
     HIDDEN_AVG = "hidden-avg"
     """Average of last hidden layer token embeddings."""
     HIDDEN_LAST = "hidden-last"
@@ -67,7 +67,7 @@ class FeatureExpansion(nn.Module):
         *,
         model_name: str = "google/gemma-2-2b",
         device: torch.device,
-        embed_mode: EmbedMode = EmbedMode.HIDDEN_AVG,
+        mode: ExpansionMode = ExpansionMode.HIDDEN_AVG,
         embed_max_chars: int = 1024,
         embed_batch_size: int = 8,
     ):
@@ -75,7 +75,7 @@ class FeatureExpansion(nn.Module):
 
         self.model_name = model_name
         self.device = device
-        self.embed_mode = embed_mode
+        self.mode = mode
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
@@ -151,7 +151,7 @@ class FeatureExpansion(nn.Module):
         strings: list[str],
         embedding_label: str,
     ) -> list[Tensor]:
-        embedding_label = f"{embedding_label}_{self.embed_mode.value}"
+        embedding_label = f"{embedding_label}_{self.mode.value}"
 
         cached_embeddings = [
             self.cache.get(
@@ -213,12 +213,12 @@ class FeatureExpansion(nn.Module):
         embeddings: list[Tensor] = []
 
         for hidden, count in zip(hidden_states, non_pad_token_counts):
-            match self.embed_mode:
-                case EmbedMode.HIDDEN_AVG:
+            match self.mode:
+                case ExpansionMode.HIDDEN_AVG:
                     non_pad_hidden = hidden[:count]  # shape: (seq_len, hidden_size)
                     avg = non_pad_hidden.mean(dim=0)  # shape: (hidden_size)
                     embeddings.append(avg)
-                case EmbedMode.HIDDEN_LAST:
+                case ExpansionMode.HIDDEN_LAST:
                     last_hidden = hidden[count - 1]  # shape: (hidden_size)
                     embeddings.append(last_hidden)
 

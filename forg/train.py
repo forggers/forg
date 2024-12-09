@@ -13,7 +13,7 @@ from tqdm import tqdm
 from .costs import DistanceMSECost, TSNECost
 from .embedding import Embedding
 from .embedding_metric import EmbeddingMetric, EuclideanMetric, HyperbolicMetric
-from .feature import FeatureExpansion
+from .feature import ExpansionMode, FeatureExpansion
 from .file import FileFeatures
 from .utils import detect_device, load_files, save_plt_to_img
 
@@ -49,6 +49,10 @@ def train(
     expansion_batch_size: Annotated[
         int, typer.Option(help="Batch size for feature expansion")
     ] = 8,
+    expansion_mode: Annotated[
+        ExpansionMode,
+        typer.Option(help="How to interpret model output for feature expansion"),
+    ] = ExpansionMode.HIDDEN_AVG,
     D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
@@ -59,6 +63,7 @@ def train(
     expansion = FeatureExpansion(
         model_name=expansion_model_name,
         embed_batch_size=expansion_batch_size,
+        mode=expansion_mode,
         device=detect_device(),
     )
     embedding = Embedding(expansion=expansion, D=D, width=width, depth=depth)
