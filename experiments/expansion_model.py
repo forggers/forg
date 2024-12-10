@@ -8,5 +8,5 @@ for expansion_model_name in ["google/gemma-2-2b", "meta-llama/Meta-Llama-3-8B"]:
             samples=3000,
             epochs=100_000,
             expansion_model_name=expansion_model_name,
-            expansion_batch_size=64,
+            expansion_batch_size=32,  # bigger model -> smaller batch size
         )
