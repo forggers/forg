@@ -1,13 +1,15 @@
 import hashlib
 import os
-import shutil
 from typing import cast
 
+import typer
 from scipy.cluster.hierarchy import ClusterNode, linkage, to_tree
 
 from .embedding import Embedding
 from .embedding_metric import EmbeddingMetric
 from .file import FileFeatures
+from .train import load_checkpoint
+from .utils import load_files
 
 
 def cluster_to_disk(
@@ -18,7 +20,8 @@ def cluster_to_disk(
     *,
     num_dirs: int = 10,
 ):
-    shutil.rmtree(destination_dir, ignore_errors=True)
+    if os.path.exists(destination_dir):
+        raise FileExistsError(destination_dir)
 
     embeddings = embedding(files)
     dist_matrix = embedding_metric.distance_matrix(embeddings)
@@ -79,3 +82,27 @@ def cluster_to_disk(
             traverse_child(node.right)
 
     traverse(root, destination_dir)
+
+
+def cluster(
+    checkpoint_dir: str,
+    source_dir: str,
+    destination_dir: str,
+    num_dirs: int = 10,
+):
+    checkpoint = load_checkpoint(checkpoint_dir)
+
+    raw_files = load_files(source_dir)
+    files = checkpoint.embedding.expansion.expand(raw_files)
+
+    cluster_to_disk(
+        checkpoint.embedding,
+        checkpoint.embedding_metric,
+        files,
+        destination_dir,
+        num_dirs=num_dirs,
+    )
+
+
+if __name__ == "__main__":
+    typer.run(cluster)

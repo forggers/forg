@@ -213,8 +213,8 @@ def train(
     )
 
 
-def load_checkpoint(logdir: str) -> TrainCheckpoint:
-    checkpoint_path = os.path.join(logdir, BEST_CHECKPOINT_FILENAME)
+def load_checkpoint(checkpoint_dir: str) -> TrainCheckpoint:
+    checkpoint_path = os.path.join(checkpoint_dir, BEST_CHECKPOINT_FILENAME)
     return torch.load(checkpoint_path, weights_only=False, map_location=detect_device())
 
 
