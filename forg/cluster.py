@@ -92,6 +92,9 @@ def cluster(
 ):
     checkpoint = load_checkpoint(checkpoint_dir)
 
+    cache = checkpoint.embedding.expansion.cache
+    cache.cache_dir = os.path.join(cache.cache_dir, "__cluster__")
+
     raw_files = load_files(source_dir)
     files = checkpoint.embedding.expansion.expand(raw_files)
 
