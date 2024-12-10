@@ -67,23 +67,23 @@ class FeatureExpansion(nn.Module):
         *,
         model_name: str = "google/gemma-2-2b",
         device: torch.device,
-        mode: ExpansionMode = ExpansionMode.HIDDEN_AVG,
-        embed_suffix: str = "",
+        content_expansion_mode: ExpansionMode = ExpansionMode.HIDDEN_AVG,
+        content_expansion_suffix: str = "",
         embed_max_chars: int = 1024,
         embed_batch_size: int = 8,
     ):
         """
         To implement PromptEOL (https://arxiv.org/pdf/2307.16645), use a config like:
-        - mode=ExpansionMode.HIDDEN_LAST
-        - embed_suffix="\n\n-----\n\nThe file above most likely belongs to a folder named (one word): "
+        - content_expansion_mode=ExpansionMode.HIDDEN_LAST
+        - content_expansion_suffix="\n\n-----\n\nThe file above most likely belongs to a folder named (one word): "
         """
 
         super().__init__()
 
         self.model_name = model_name
         self.device = device
-        self.mode = mode
-        self.embed_suffix = embed_suffix
+        self.content_expansion_mode = content_expansion_mode
+        self.content_expansion_suffix = content_expansion_suffix
         self.embed_max_chars = embed_max_chars
         self.embed_batch_size = embed_batch_size
 
@@ -103,13 +103,21 @@ class FeatureExpansion(nn.Module):
 
         # embed file name and extension together
         names = [file.name + file.extension for file in files]
-        name_embeddings = self.__embed_str_batched(factory, files, names, "name")
+        names = [s[: self.embed_max_chars] for s in names]
+
+        name_embeddings = self.__embed_str_batched(
+            factory, files, names, "name", ExpansionMode.HIDDEN_AVG
+        )
 
         text_files = [file for file in files if file.content is not None]
         text_contents = [cast(str, file.content) for file in text_files]
+        text_contents = [
+            s[: self.embed_max_chars] + self.content_expansion_suffix
+            for s in text_contents
+        ]
 
         text_content_embeddings = self.__embed_str_batched(
-            factory, text_files, text_contents, "content"
+            factory, text_files, text_contents, "content", self.content_expansion_mode
         )
         content_embeddings: list[Tensor] = []
 
@@ -152,9 +160,9 @@ class FeatureExpansion(nn.Module):
         files: list[RawFile],
         strings: list[str],
         embedding_label: str,
+        mode: ExpansionMode,
     ) -> list[Tensor]:
-        strings = [s[: self.embed_max_chars] + self.embed_suffix for s in strings]
-        embedding_label = f"{embedding_label}_{self.mode.value}"
+        embedding_label = f"{embedding_label}_{mode.value}"
 
         cached_embeddings = [
             self.cache.get(
@@ -176,7 +184,7 @@ class FeatureExpansion(nn.Module):
         ):
             batch_files = uncached_files[i : i + self.embed_batch_size]
             batch_strings = uncached_strings[i : i + self.embed_batch_size]
-            batch_embeddings = self.__embed_str(factory, batch_strings)
+            batch_embeddings = self.__embed_str(factory, batch_strings, mode)
 
             uncached_embeddings.extend(batch_embeddings)
 
@@ -196,7 +204,9 @@ class FeatureExpansion(nn.Module):
         return embeddings
 
     @torch.no_grad()
-    def __embed_str(self, factory: ModelFactory, strings: list[str]) -> list[Tensor]:
+    def __embed_str(
+        self, factory: ModelFactory, strings: list[str], mode: ExpansionMode
+    ) -> list[Tensor]:
         """
         Returns the average of the token embeddings.
         Takes in a batch of strings and returns a batch of embeddings.
@@ -214,7 +224,7 @@ class FeatureExpansion(nn.Module):
         embeddings: list[Tensor] = []
 
         for hidden, count in zip(hidden_states, non_pad_token_counts):
-            match self.mode:
+            match mode:
                 case ExpansionMode.HIDDEN_AVG:
                     non_pad_hidden = hidden[:count]  # shape: (seq_len, hidden_size)
                     avg = non_pad_hidden.mean(dim=0)  # shape: (hidden_size)

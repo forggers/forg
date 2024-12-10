@@ -49,11 +49,11 @@ def train(
     expansion_batch_size: Annotated[
         int, typer.Option(help="Batch size for feature expansion")
     ] = 8,
-    expansion_mode: Annotated[
+    content_expansion_mode: Annotated[
         ExpansionMode,
         typer.Option(help="How to interpret model output for feature expansion"),
     ] = ExpansionMode.HIDDEN_AVG,
-    expansion_suffix: Annotated[
+    content_expansion_suffix: Annotated[
         str,
         typer.Option(help="Useful for PromptEOL. See FeatureExpansion in feature.py"),
     ] = "",
@@ -66,8 +66,8 @@ def train(
 ):
     expansion = FeatureExpansion(
         model_name=expansion_model_name,
-        mode=expansion_mode,
-        embed_suffix=expansion_suffix,
+        content_expansion_mode=content_expansion_mode,
+        content_expansion_suffix=content_expansion_suffix,
         embed_batch_size=expansion_batch_size,
         device=detect_device(),
     )
