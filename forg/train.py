@@ -51,6 +51,7 @@ BEST_CHECKPOINT_FILENAME = "best_checkpoint.pt"
 
 def train(
     repo_dir: str,
+    run_label: str = "",
     samples: int = 1000,
     train_split: float = 0.8,
     epochs: int = 1000,
@@ -187,6 +188,7 @@ def train(
         f.write(f"Best epoch: {best_epoch}\n")
         f.write("\n")
         f.write(f"Arguments:\n")
+        f.write(f"  run_label: {run_label}\n")
         f.write(f"  repo_dir: {repo_dir}\n")
         f.write(f"  samples: {samples}\n")
         f.write(f"  train_split: {train_split}\n")
