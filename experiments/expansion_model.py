@@ -1,6 +1,6 @@
 from forg.train import train
 
-for expansion_model_name in ["google/gemma-2-2b", "meta-llama/Meta-Llama-3-8B"]:
+for expansion_model_name in ["meta-llama/Meta-Llama-3-8B", "google/gemma-2-2b"]:
     for run in range(3):  # run multiple times
         train(
             "../data/repos/react",
