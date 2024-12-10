@@ -215,7 +215,10 @@ def train(
 
 def load_checkpoint(checkpoint_dir: str) -> TrainCheckpoint:
     checkpoint_path = os.path.join(checkpoint_dir, BEST_CHECKPOINT_FILENAME)
-    return torch.load(checkpoint_path, weights_only=False, map_location=detect_device())
+    device = detect_device()
+    checkpoint = torch.load(checkpoint_path, weights_only=False, map_location=device)
+    checkpoint.embedding.expansion.device = device
+    return checkpoint
 
 
 if __name__ == "__main__":
