@@ -89,8 +89,13 @@ def cluster(
     destination_dir: str,
     checkpoint_dir: Annotated[str, typer.Option()],
     num_dirs: int = 10,
+    expansion_batch_size: Annotated[
+        int, typer.Option(help="Batch size for feature expansion")
+    ] = 8,
 ):
     checkpoint = load_checkpoint(checkpoint_dir)
+
+    checkpoint.embedding.expansion.embed_batch_size = expansion_batch_size
 
     cache = checkpoint.embedding.expansion.cache
     cache.cache_dir = os.path.join(cache.cache_dir, "__cluster__")
