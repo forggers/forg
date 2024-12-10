@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import pickle
 import random
 from dataclasses import dataclass
 from enum import Enum
@@ -71,7 +72,7 @@ def train(
     D: Annotated[int, typer.Option(help="Embedding dimension")] = 2,
     width: Annotated[int, typer.Option(help="Embedding MLP width")] = 512,
     depth: Annotated[int, typer.Option(help="Embedding MLP depth")] = 2,
-    metric: EmbeddingMetricType = EmbeddingMetricType.EUCLIDEAN,
+    metric: EmbeddingMetricType = EmbeddingMetricType.HYPERBOLIC,
     cost: CostType = CostType.DISTANCE_MSE,
     plot_interval: int = 100,
 ):
@@ -110,6 +111,9 @@ def train(
 
     optimizer = torch.optim.Adam(train_cost.parameters(), lr=lr)
 
+    train_costs: list[float] = []
+    test_costs: list[float] = []
+
     best_test_c = math.inf
     best_epoch = 0
     best_embedding_state = embedding.state_dict()
@@ -146,6 +150,9 @@ def train(
             writer.add_image("Embeddings/train", get_embeddings_img(train_files), epoch)
             writer.add_image("Embeddings/test", get_embeddings_img(test_files), epoch)
 
+        train_costs.append(train_c.item())
+        test_costs.append(test_c.item())
+
         if test_c < best_test_c:
             best_test_c = test_c
             best_epoch = epoch
@@ -166,10 +173,19 @@ def train(
     checkpoint_path = os.path.join(writer.get_logdir(), BEST_CHECKPOINT_FILENAME)
     torch.save(checkpoint, checkpoint_path)
 
+    train_costs_path = os.path.join(writer.get_logdir(), "train_costs.pkl")
+    with open(train_costs_path, "wb") as f:
+        pickle.dump(train_costs, f)
+
+    test_costs_path = os.path.join(writer.get_logdir(), "test_costs.pkl")
+    with open(test_costs_path, "wb") as f:
+        pickle.dump(test_costs, f)
+
     summary_path = os.path.join(writer.get_logdir(), "summary.txt")
     with open(summary_path, "w") as f:
-        f.write(f"Best epoch: {best_epoch}\n")
         f.write(f"Best test cost: {best_test_c}\n")
+        f.write(f"Best epoch: {best_epoch}\n")
+        f.write("\n")
         f.write(f"Arguments:\n")
         f.write(f"  repo_dir: {repo_dir}\n")
         f.write(f"  samples: {samples}\n")
