@@ -57,7 +57,8 @@ class EmbeddingCache:
     def __to_cache_file(
         self, file: RawFile, embedding_label: str, embedding_input: str
     ) -> str:
-        input_hash = hashlib.sha256(embedding_input.encode()).hexdigest()
+        # short-sha
+        input_hash = hashlib.sha256(embedding_input.encode()).hexdigest()[:8]
         save_file = f"{embedding_label}_{input_hash}.pt"
         return os.path.join(self.__to_cache_dir(file), save_file)
 
