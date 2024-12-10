@@ -1,6 +1,6 @@
 import hashlib
 import os
-from typing import cast
+from typing import Annotated, cast
 
 import typer
 from scipy.cluster.hierarchy import ClusterNode, linkage, to_tree
@@ -85,9 +85,9 @@ def cluster_to_disk(
 
 
 def cluster(
-    checkpoint_dir: str,
     source_dir: str,
     destination_dir: str,
+    checkpoint_dir: Annotated[str, typer.Option()],
     num_dirs: int = 10,
 ):
     checkpoint = load_checkpoint(checkpoint_dir)
