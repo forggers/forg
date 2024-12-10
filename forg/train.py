@@ -15,6 +15,7 @@ from tqdm import tqdm
 
 from .costs import DistanceMSECost, TSNECost
 from .embedding import Embedding
+from .embedding_cache import EmbeddingCache
 from .embedding_metric import EmbeddingMetric, EuclideanMetric, HyperbolicMetric
 from .feature import ExpansionMode, FeatureExpansion
 from .file import FileFeatures
@@ -216,8 +217,12 @@ def train(
 def load_checkpoint(checkpoint_dir: str) -> TrainCheckpoint:
     checkpoint_path = os.path.join(checkpoint_dir, BEST_CHECKPOINT_FILENAME)
     device = detect_device()
-    checkpoint = torch.load(checkpoint_path, weights_only=False, map_location=device)
-    checkpoint.embedding.expansion.device = device
+    checkpoint: TrainCheckpoint = torch.load(
+        checkpoint_path, weights_only=False, map_location=device
+    )
+    expansion = checkpoint.embedding.expansion
+    expansion.device = device
+    expansion.cache = EmbeddingCache(model_name=expansion.model_name)
     return checkpoint
 
 
