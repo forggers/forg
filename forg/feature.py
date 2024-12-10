@@ -153,6 +153,7 @@ class FeatureExpansion(nn.Module):
         strings: list[str],
         embedding_label: str,
     ) -> list[Tensor]:
+        strings = [s[: self.embed_max_chars] + self.embed_suffix for s in strings]
         embedding_label = f"{embedding_label}_{self.mode.value}"
 
         cached_embeddings = [
@@ -200,8 +201,6 @@ class FeatureExpansion(nn.Module):
         Returns the average of the token embeddings.
         Takes in a batch of strings and returns a batch of embeddings.
         """
-
-        strings = [s[: self.embed_max_chars] + self.embed_suffix for s in strings]
 
         tokenizer = factory.get_tokenizer()
         model = factory.get_model()
