@@ -1,16 +1,31 @@
 import hashlib
 import os
+from enum import Enum
 from typing import Annotated, cast
 
 import torch
 import typer
-from scipy.cluster.hierarchy import ClusterNode, linkage, to_tree
+from scipy.cluster import hierarchy
+from scipy.cluster.hierarchy import ClusterNode
 
 from .embedding import Embedding
 from .embedding_metric import EmbeddingMetric
 from .file import FileFeatures
 from .train import load_checkpoint
 from .utils import load_files
+
+
+class Linkage(str, Enum):
+    SINGLE = "single"
+    COMPLETE = "complete"
+    AVERAGE = "average"
+    WEIGHTED = "weighted"
+    CENTROID = "centroid"
+    MEDIAN = "median"
+    WARD = "ward"
+
+
+DEFAULT_LINKAGE = Linkage.WARD
 
 
 @torch.no_grad()
@@ -21,6 +36,7 @@ def cluster_to_disk(
     destination_dir: str,
     *,
     num_dirs: int = 10,
+    linkage: Linkage = DEFAULT_LINKAGE,
 ):
     if os.path.exists(destination_dir):
         raise FileExistsError(destination_dir)
@@ -29,8 +45,8 @@ def cluster_to_disk(
     dist_matrix = embedding_metric.distance_matrix(embeddings)
     dist_matrix = dist_matrix.cpu().detach()
 
-    Z = linkage(dist_matrix, "ward")
-    root = to_tree(Z)
+    Z = hierarchy.linkage(dist_matrix, method=linkage)
+    root = hierarchy.to_tree(Z)
     root = cast(ClusterNode, root)
 
     edge_lengths: list[float] = []
@@ -95,6 +111,7 @@ def cluster(
     expansion_batch_size: Annotated[
         int, typer.Option(help="Batch size for feature expansion")
     ] = 8,
+    linkage: Linkage = DEFAULT_LINKAGE,
 ):
     checkpoint = load_checkpoint(checkpoint_dir)
 
@@ -112,6 +129,7 @@ def cluster(
         files,
         destination_dir,
         num_dirs=num_dirs,
+        linkage=linkage,
     )
 
 
