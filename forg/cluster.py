@@ -2,6 +2,7 @@ import hashlib
 import os
 from typing import Annotated, cast
 
+import torch
 import typer
 from scipy.cluster.hierarchy import ClusterNode, linkage, to_tree
 
@@ -12,6 +13,7 @@ from .train import load_checkpoint
 from .utils import load_files
 
 
+@torch.no_grad()
 def cluster_to_disk(
     embedding: Embedding,
     embedding_metric: EmbeddingMetric,
@@ -84,6 +86,7 @@ def cluster_to_disk(
     traverse(root, destination_dir)
 
 
+@torch.no_grad()
 def cluster(
     source_dir: str,
     destination_dir: str,
