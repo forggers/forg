@@ -4,3 +4,15 @@
 [submodule "data/repos/pytorch"]
 	path = data/repos/pytorch
 	url = https://github.com/pytorch/pytorch.git
+[submodule "data/repos/historical/react-2016"]
+	path = data/repos/historical/react-2016
+	url = https://github.com/facebook/react.git
+[submodule "data/repos/historical/react-2018"]
+	path = data/repos/historical/react-2018
+	url = https://github.com/facebook/react.git
+[submodule "data/repos/historical/react-2020"]
+	path = data/repos/historical/react-2020
+	url = https://github.com/facebook/react.git
+[submodule "data/repos/historical/react-2022"]
+	path = data/repos/historical/react-2022
+	url = https://github.com/facebook/react.git
