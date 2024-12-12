@@ -208,7 +208,7 @@ For a given file, we are interested in properties that correlate with its locati
   \Big( f_s(\textsc{Filename}_i), f_s(\textsc{Contents}_i) \Big) \in \mathbb R^d \; .
 \end{align}
 
-We propose two constructions of $f_s$.
+We propose two constructions of $f_s$, the string-to-feature function.
 
 \subsubsection{String-to-Feature Construction 1: Counts of Top Tokens}
 
@@ -220,7 +220,7 @@ Let $s \in \Sigma^*$ be the input string to $f_s$. Furthermore, we consider the 
 \end{align}
 where $\text{count}_i(s)$ is the number of times the $i$-th most frequent token appears in the tokenized version of $s$. This construction yields $d = 2t$.
 
-\subsubsection{String-to-Feature Construction 1: Last Hidden State of LLM}
+\subsubsection{String-to-Feature Construction 2: Last Hidden State of LLM}
 
 We can also use the last hidden state of the LLM as the feature vector. This is a common practice in NLP, as the last hidden state is thought to contain a compressed representation of the input text. Namely, our LLMs have been pre-trained over vast sums of text such that the last hidden state represents the input text in a way that is useful for next-token prediction.
 
@@ -337,12 +337,33 @@ We instead choose to use a very similar transformation:
   \label{fig:radial-transformations}
 \end{figure}
 
-This particular formulation has the advantage of simplifying the Poincaré distance expression in \eqref{eq:poincare-distance}. Namely, let $y_i = f(x_i)$ be the output of the MLP, and consider computing the Poincaré distance between output vectors \emph{normalized} via $g$.\footnote{Abusing notation, we will let $g(y_i)$ denote a \emph{vector} that is in the direction of $y_i$ but with norm equal to $g(\norm{y_i})$.} The quantity in the denominator simplifies through $1 - \norm{g(y_i)}^2 = e^{-\norm{y_i}^2}$. The Poincaré distance between normalized vectors is then\footnote{In practice, we must also add a small $10^{-7}$ epsilon to the argument of $\text{arcosh}(\cdot)$ to avoid numerical issues.}
+This particular formulation has the advantage of simplifying the Poincaré distance expression in \eqref{eq:poincare-distance}. Namely, let $y_i = f(x_i)$ be the output of the MLP, and consider computing the Poincaré distance between output vectors \emph{normalized} via $g$.\footnote{Abusing notation, we will let $g(y_i)$ denote a \emph{vector} that is in the direction of $y_i$ but with norm equal to $g(\norm{y_i})$.} The quantity in the denominator simplifies through $1 - \norm{g(y_i)}^2 = e^{-\norm{y_i}^2}$. The Poincaré metric---accounting for normalization---is then\footnote{In practice, we must also add a small $10^{-7}$ epsilon to the argument of $\text{arcosh}(\cdot)$ to avoid numerical issues.}
 \begin{align}
-  d \Big( g(y_i), g(y_j) \Big)
+  \sigma(y_i, y_j)
+  = d \Big( g(y_i), g(y_j) \Big)
   = \text{arcosh} \qty[1 + 2 \frac{\norm{g(y_i) - g(y_j)}^2}{e^{-\norm{y_i}^2} e^{-\norm{y_j}^2}}] \; .
 \end{align}
 
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    % Draw the unit circle (Poincaré disk boundary)
+    \draw[thick] (0,0) circle (3);
+    % Draw level curves at every 0.25 (pre-transformed)
+    \draw[thick, dotted] (0,0) circle (0.738);
+    \draw[thick, dotted] (0,0) circle (1.411);
+    \draw[thick, dotted] (0,0) circle (1.968);
+    \draw[thick, dotted] (0,0) circle (2.386);
+    \draw[thick, dotted] (0,0) circle (2.667);
+    \draw[thick, dotted] (0,0) circle (2.838);
+    \draw[thick, dotted] (0,0) circle (2.929);
+    \draw[thick, dotted] (0,0) circle (2.972);
+    % Draw the origin
+    \fill (0,0) circle (0.07);
+  \end{tikzpicture}
+  \caption{Level curves in the Poincaré disk at normalized radii $g(0.25), g(0.5), \dots, g(2.0)$.}
+  \label{fig:poincare-level-curves}
+\end{figure}
 
 
 \subsection{Part 3: Organizing Files Hierarchically}
