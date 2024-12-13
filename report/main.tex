@@ -10,6 +10,7 @@
 \usepackage{lmodern}
 \usepackage{physics}
 \usepackage{tikz}
+\usepackage{booktabs}
 \usepackage{pgfplots}
 \usepackage{fancyvrb}
 \usepackage{pmboxdraw}
@@ -447,6 +448,53 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
 \subsection{Time Complexity Analysis}
 
 \section{Experiments}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{output/metric_and_dimensionality_short_term.pdf}
+  \caption{TODO} % TODO
+  \label{fig:metric-and-dimensionality-short-term}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{output/metric_and_dimensionality_long_term.pdf}
+  \caption{TODO} % TODO
+  \label{fig:metric-and-dimensionality-long-term}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{output/expansion_model.pdf}
+  \caption{TODO} % TODO
+  \label{fig:expansion-model}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{output/content_expansion.pdf}
+  \caption{TODO} % TODO
+  \label{fig:content-expansion}
+\end{figure}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lcr}
+    \toprule
+    \textbf{Training Year}
+         & \textbf{\# of Training Files}
+         & \textbf{Test Cost}                     \\
+    \midrule
+    2016 & 940                           & 42.205 \\
+    2018 & 801                           & 47.745 \\
+    2020 & 1673                          & 27.114 \\
+    2022 & 2424                          & 23.853 \\
+    \bottomrule
+  \end{tabular}
+  \caption{TODO} % TODO
+  \label{tab:example}
+\end{table}
+
 
 \section{Conclusion}
 

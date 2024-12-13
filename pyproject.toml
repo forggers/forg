@@ -16,6 +16,7 @@ dependencies = [
     "ipywidgets",
     "matplotlib",
     "numpy",
+    "pandas",
     "scipy",
     "tensorboard",
     "torch",
