@@ -4,6 +4,7 @@
 *.fdb_latexmk
 *.fls
 *.log
+*.blg
 *.run.xml
 *.synctex.gz
 main.pdf

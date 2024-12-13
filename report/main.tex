@@ -302,9 +302,9 @@ We take $f$ to be a multi-layer perceptron (MLP). The goal is to learn a mapping
 \subsubsection{Cost Function 1: Mean Squared Error}
 
 The obvious strategy is to minimize the mean squared error of distances between all $\abs{U}^2$ pairs of files. Namely, with $\mathbf w$ denoting the parameters of $f$, and $x_i = \phi(u_i)$, we optimize the following:
-\begin{align*}
-  \min_{\mathbf w} \sum_{(u_i, u_j) \in U^2} \Big[ \sigma(f(x_i), f(x_j)) - \mathcal T(u_i, u_j) \Big]^2 \; .
-\end{align*}
+\begin{align}
+  \min_{\mathbf w} \sum_{(u_i, u_j) \in U^2} \Big[ \sigma(f(x_i), f(x_j)) - \mathcal T(u_i, u_j) \Big]^2 \; . \label{eq:mse-cost}
+\end{align}
 
 \subsubsection{Cost Function 2: t-SNE Objective}
 
@@ -497,6 +497,22 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
 
 \section{Experiments}
 
+We evaluate our method's performance in the context of organizing files from GitHub repositories. We focus on React, an MIT-licensed JavaScript library built by Meta for building user interfaces. We chose this repository because React is one of the most popular libraries among developers. Furthermore, the repository contains a variety of file types, organized according to good practices.
+
+The React repository has $N=6922$ total files. In our experiments, we randomly select 3000 files using a fixed seed, then partition them into 80\% training data and 20\% test data. We analyze the test cost across training epochs, using the MSE formulation in \eqref{eq:mse-cost}. In our experiments, we know the true tree distances between test files, which lets us compute the test cost.
+
+\subsection{Double Descent}
+
+We observe a double descent phenomenon in the test cost, which is especially pronounced under the hyperbolic metric. Figure \ref{fig:metric-and-dimensionality-short-term} shows that the test cost reaches a minimum after a few hundred epochs. We call this the \emph{short-term} behavior. However, after a few orders of magnitude more epochs, the test cost starts to decrease again. We call this the \emph{long-term} behavior, as shown in Figure \ref{fig:metric-and-dimensionality-long-term}. After about 20K--100K epochs, the test cost reaches a new minimum.
+
+In the hyperbolic case, the long-term minimum is lower than the short-term minimum. We believe this is due to the fact that gradually, the MLP learns to embed files towards the edge of the Poincaré disk, where there is more \emph{space} to fit tree-like structures. In tandem, the \texttt{SCALE} parameter decreases over time to compensate for the increased distance between points. This effect is shown in Figure \ref{fig:short-and-long-term-embeddings}.
+
+\subsection{Effect of Metric and Dimensionality}
+
+We find concrete evidence that embedding into a hyperbolic space produces lower test costs than embedding into a Euclidean space. In the short term, this difference is not noticeable because the embeddings start near the origin of the Poincaré disk (see Figure \ref{fig:metric-and-dimensionality-short-term}). However, in the long term, as the embeddings move towards the boundary of the disk, the hyperbolic embeddings outperform the Euclidean embeddings (see Figure \ref{fig:metric-and-dimensionality-long-term}).
+
+We also find that higher dimensionality spaces lead to lower test costs, for both Euclidean and hyperbolic metrics. This is likely because higher dimensionality spaces also give more \emph{space} to fit tree-like structures. However, as seen in Figure \ref{fig:metric-and-dimensionality-long-term}, even a high-dimensional $D=6$ Euclidean space is outperformed by a $D=2$ hyperbolic space. Going into higher dimensions in hyperbolic space provides additional benefits, but with diminishing returns.
+
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/metric_and_dimensionality_short_term.pdf}
@@ -514,18 +530,6 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
 \begin{figure}[ht]
   \begin{minipage}{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{figures/react_train.png}
-  \end{minipage}%
-  \begin{minipage}{0.5\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figures/react_test.png}
-  \end{minipage}
-  \caption{TODO} % TODO
-\end{figure}
-
-\begin{figure}[ht]
-  \begin{minipage}{0.5\textwidth}
-    \centering
     \includegraphics[width=\linewidth]{figures/short_term.png}
   \end{minipage}%
   \begin{minipage}{0.5\textwidth}
@@ -533,7 +537,12 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
     \includegraphics[width=\linewidth]{figures/long_term.png}
   \end{minipage}
   \caption{TODO} % TODO
+  \label{fig:short-and-long-term-embeddings}
 \end{figure}
+
+\subsection{Effect of Feature Expansion of Files}
+
+We analyze the performance with respect to the choice of LLM used in the feature expansion $\phi$. We find that pre-trained LLMs with higher parameter counts produce feature expansions that lead to lower test costs. This makes sense: larger LLMs have been trained on more data and produce embeddings that better capture the semantics of the input strings. See Figure \ref{fig:expansion-model} for a comparison of Google's Gemma 2B and Meta's Llama 3 8B.
 
 \begin{figure}[ht]
   \centering
@@ -542,6 +551,8 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
   \label{fig:expansion-model}
 \end{figure}
 
+Furthermore, we benchmark the various string-to-feature constructions $f_s$ (i.e., how to interpret the LLM's hidden state). We find that simply taking the average of the token embeddings across all input tokens produces the best feature vectors. When choosing to use just the last token embeddings, however, the \emph{PromptEOL} strategy from \cite{jiang2023scalingsentenceembeddingslarge} still gives a measurable boost in performance.
+
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/content_expansion.pdf}
@@ -549,23 +560,24 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
   \label{fig:content-expansion}
 \end{figure}
 
-\begin{table}[ht]
-  \centering
-  \begin{tabular}{lcr}
-    \toprule
-    \textbf{Training Year}
-         & \textbf{\# of Training Files}
-         & \textbf{Test Cost}                     \\
-    \midrule
-    2016 & 940                           & 42.205 \\
-    2018 & 801                           & 47.745 \\
-    2020 & 1673                          & 27.114 \\
-    2022 & 2424                          & 23.853 \\
-    \bottomrule
-  \end{tabular}
+\subsection{Qualitative Analysis}
+
+We qualitatively analyze the embeddings produced by our method. Figure \ref{fig:React-training-and-test-embeddings} shows that the learned embedding function indeed groups together files from key top-level directories in the React repository.
+
+\begin{figure}[ht]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/react_train.png}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/react_test.png}
+  \end{minipage}
   \caption{TODO} % TODO
-  \label{tab:example}
-\end{table}
+  \label{fig:React-training-and-test-embeddings}
+\end{figure}
+
+We also look at the qualitative differences in embeddings produced by the MSE and t-SNE cost functions. As expected, the t-SNE cost function produces ``cluster-happy'' embeddings (see figure \ref{fig:cost-function-emnbeddings}). However, we find that the MSE cost function produces embeddings that are more suitable for hierarchical clustering.
 
 \begin{figure}[ht]
   \begin{minipage}{0.5\textwidth}
@@ -577,7 +589,12 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
     \includegraphics[width=\linewidth]{figures/tsne_cost.png}
   \end{minipage}
   \caption{TODO} % TODO
+  \label{fig:cost-function-emnbeddings}
 \end{figure}
+
+\subsection{Transfer Learning}
+
+We take the embedding model $f$ trained on the React repository and apply it to the Forg repository (i.e., the very code used in all these experiments). The resulting file tree in figure \ref{fig:forg-directory-structure} shows that the model produces a very reasonable directory structure (keep in mind that it was trained on a JavaScript repository and applied to a Python repository).
 
 \begin{figure}[ht]
   \centering
@@ -623,6 +640,27 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
   \caption{TODO} % TODO
   \label{fig:forg-directory-structure}
 \end{figure}
+
+We also study the model's performance when trained on a historical snapshot of the React repository and applied to the current React repository. This is important because we may want to tune a model to a specific repository, and expect it to perform well even as the repository evolves. Table \ref{tab:historical-transfer} shows that the model's performance degrades as the gap between the training and test years increases.
+
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lcr}
+    \toprule
+    \textbf{Training Year}
+         & \textbf{\# of Training Files}
+         & \textbf{Test Cost}                     \\
+    \midrule
+    2016 & 940                           & 42.205 \\
+    2018 & 801                           & 47.745 \\
+    2020 & 1673                          & 27.114 \\
+    2022 & 2424                          & 23.853 \\
+    \bottomrule
+  \end{tabular}
+  \caption{TODO} % TODO
+  \label{tab:historical-transfer}
+\end{table}
 
 \section{Conclusion}
 
