@@ -16,6 +16,8 @@ from .embedding_cache import EmbeddingCache
 from .file import FileFeatures, RawFile
 from .utils import empty_cache
 
+__all__ = ["ExpansionMode", "FeatureExpansion"]
+
 
 class ExpansionMode(str, Enum):
     HIDDEN_AVG = "hidden-avg"

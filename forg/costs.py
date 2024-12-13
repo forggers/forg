@@ -6,6 +6,8 @@ from .embedding_metric import EmbeddingMetric
 from .file import FileFeatures
 from .tree_metric import tree_distance_matrix
 
+__all__ = ["Cost", "DistanceMSECost", "TSNECost"]
+
 
 class Cost(nn.Module):
     def __init__(self, embedding: Embedding, embedding_metric: EmbeddingMetric):

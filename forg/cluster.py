@@ -14,6 +14,8 @@ from .file import FileFeatures
 from .train import load_checkpoint
 from .utils import load_files
 
+__all__ = ["Linkage", "DEFAULT_LINKAGE", "cluster_to_disk", "cluster"]
+
 
 class Linkage(str, Enum):
     SINGLE = "single"

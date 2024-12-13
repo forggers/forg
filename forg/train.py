@@ -21,6 +21,15 @@ from .feature import ExpansionMode, FeatureExpansion
 from .file import FileFeatures
 from .utils import detect_device, load_files, save_plt_to_img
 
+__all__ = [
+    "TrainResult",
+    "TrainCheckpoint",
+    "EmbeddingMetricType",
+    "CostType",
+    "train",
+    "load_checkpoint",
+]
+
 
 @dataclass
 class TrainResult:
