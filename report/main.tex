@@ -11,9 +11,12 @@
 \usepackage{physics}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\usepackage{fancyvrb}
+\usepackage{pmboxdraw}
 \usepackage{fancyhdr}
 
 \pgfplotsset{compat=1.18}
+\usetikzlibrary{calc}
 \setlength{\headheight}{5mm}
 
 \addbibresource{citations.bib} %Imports bibliography file
@@ -145,6 +148,10 @@ Geodesics are defined as the shortest paths between two points. In the Poincaré
   \label{fig:poincare-disk}
 \end{figure}
 
+\subsection{Hierarchical Clustering}
+
+% TODO talk about the various clustering schemes mentioned in \cite{müllner2011modernhierarchicalagglomerativeclustering}, Figure 2. Mention how agglomerative clustering produces a tree, and how branch lengths in the tree are computed.
+
 \subsection{Large Language Models and tokenizers}
 
 Large language models (LLMs) are trained on vast amounts of internet text to learn the distribution over candidate tokens given a sequence of input tokens. An LLM's vocabulary is a set of tokens; each token is a string of characters. A common pre-processing step is to convert input text into a sequence of tokens via a \emph{tokenizer}.
@@ -186,7 +193,8 @@ Below is a summary of the notation that is used throughout the rest of the repor
 
 \begin{itemize}
   \item $u_i \in U$: a file from the space of all files.
-  \item $\mathcal T(u_i, u_j)$: the true distance between files $u_i$ and $u_j$ in the file system tree. Note that $(U, \mathcal T)$ forms a metric space.
+  \item $U_\text{train}, U_\text{test} \subset U$: the set of training and test files, respectively.
+  \item $\mathcal T(u_i, u_j)$: the true file tree distance between training files $u_i, u_j \in U_\text{train}$. Note that $(U_\text{train}, \mathcal T)$ forms a metric space.
   \item $x_i \in X = \mathbb{R}^d$: the feature vector of file $u_i$.
   \item $\phi: U \to X$: a fixed function that maps files to feature vectors.
   \item $f: X \to Y$: a learned function that embeds file feature vectors into a metric space, preserving distances.
@@ -198,13 +206,13 @@ Below is a summary of the notation that is used throughout the rest of the repor
 
 \subsection{Part 1: Mapping Files to Feature Vectors}
 
-We start with a set of files $U$. This corpus can be training data, in which case the files come from a pre-organized file system tree, and the true tree distance $\mathcal T(u_i, u_j)$ is known for all $u_i, u_j \in U$. Alternatively, the files can be a set of unseen files, in which case $\mathcal T$ is unknown.
+Let $U$ be the space of all files. We start by defining a fixed, deterministic mapping $\phi: U \to X$ that maps files into $d$-dimensional feature vectors ($X = \mathbb R^d$). These file features should be suitable for downstream file embedding and clustering tasks. Specifically, for a given file, we are interested in properties that correlate with its location in the file system tree.
 
-For notation, let $\Sigma$ be the set of characters in a standard alphabet, e.g., ASCII ($\abs{\Sigma} = 128$), or more generally, Unicode. Let $\Sigma^*$ denote the infinite set of all character strings.
+For notation, let $\Sigma$ be the set of characters in a standard alphabet, e.g., ASCII ($\abs{\Sigma} = 128$), or more generally, Unicode. Let $\Sigma^*$ denote the infinite set of all character strings. In our case, we look at a file's name and contents, ignoring other metadata like creation date and owner.
 
-For a given file, we are interested in properties that correlate with its location in the file system tree. In our case, we look at a file's name and contents, ignoring other metadata like creation date and owner. Given a file $u_i$, we denote these properties as $\textsc{Filename}_i \in \Sigma^*$ and $\textsc{Contents}_i \in \Sigma^*$. (We will deal with non-text files later.) Ultimately, then, we care about a \emph{string-to-feature} function $f_s: \Sigma^* \to \mathbb R^{d/2}$, such that the overall file feature vector is the following concatenation:
+Given a file $u_i \in U$, we denote these properties as $\textsc{Filename}_i \in \Sigma^*$ and $\textsc{Contents}_i \in \Sigma^*$. (We will deal with non-text files later.) Ultimately, then, we care about a \emph{string-to-feature} function $f_s: \Sigma^* \to \mathbb R^{d/2}$, such that the overall file feature vector is the following concatenation:
 \begin{align}
-  f(u_i) =
+  \phi(u_i) =
   \Big( f_s(\textsc{Filename}_i), f_s(\textsc{Contents}_i) \Big) \in \mathbb R^d \; .
 \end{align}
 
@@ -238,13 +246,13 @@ At minimum, the hidden state can be seen as capturing info similar to the token 
 
 \subsection{Part 2: Learning the Embedding Function}
 
-This part learns a distance-preserving embedding function $f: X \to Y$ that embeds the feature vectors into a low-dimensional metric space $(Y, \sigma)$. The embedding model optimized over a set of training files $U$, which exist in a known file system tree. Of course, we first compute $x_i = \phi(u_i) \in X$ for each training file, which becomes the input to $f$.  We use a multi-layer perceptron (MLP) to learn the embedding function.
+This part learns a distance-preserving embedding function $f: X \to Y$ that embeds the feature vectors into a low-dimensional metric space $(Y, \sigma)$. For the learning process, we consider using training files $U_\text{train} \subset U$ that exist in a known file system tree (e.g., files from a GitHub repository). For these training files, the true tree distance $\mathcal T(u_i, u_j)$ is known for all $u_i, u_j \in U_\text{train}$. Therefore, the training files existing in a metric space $(U_\text{train}, \mathcal T)$. Of course, for each file, we first compute $x_i = \phi(u_i) \in X$.
 
-The goal is to minimize the discrepancy between the true tree distance $\mathcal T$ and the distance in the target metric space $\sigma$. We study two different cost functions that quantify this distance discrepancy.
+We take $f$ to be a multi-layer perceptron (MLP). The goal is to learn a mapping that minimizes the discrepancy between true tree distances $\mathcal T$ and distances $\sigma$ in the target metric space. We study two different cost functions that quantify this discrepancy.
 
 \subsubsection{Cost Function 1: Mean Squared Error}
 
-The obvious strategy is to minimize the mean squared error of distances between all $\abs{U}^2$ pairs of files. Namely, with $\mathbf w$ denoting the parameters of $f$, we optimize the following:
+The obvious strategy is to minimize the mean squared error of distances between all $\abs{U}^2$ pairs of files. Namely, with $\mathbf w$ denoting the parameters of $f$, and $x_i = \phi(u_i)$, we optimize the following:
 \begin{align*}
   \min_{\mathbf w} \sum_{(u_i, u_j) \in U^2} \Big[ \sigma(f(x_i), f(x_j)) - \mathcal T(u_i, u_j) \Big]^2 \; .
 \end{align*}
@@ -361,12 +369,82 @@ This particular formulation has the advantage of simplifying the Poincaré dista
     % Draw the origin
     \fill (0,0) circle (0.07);
   \end{tikzpicture}
-  \caption{Level curves in the Poincaré disk at normalized radii $g(0.25), g(0.5), \dots, g(2.0)$.}
+  \caption{Level curves in the Poincaré disk at normalized radii $g(0.25), g(0.5), \dots, g(2.0)$. Observe that more ``input bits'' are reserved for the boundary of the disk.}
   \label{fig:poincare-level-curves}
 \end{figure}
 
 
 \subsection{Part 3: Organizing Files Hierarchically}
+
+Finally, we propose a procedure to organize files hierarchically. Here, we consider ``test'' files $U_\text{test} \subset U$ whose true tree distances are unknown. These files have not been used to train the embedding function $f$.
+
+Using the fixed feature expansion and learned embedding function, we can embed each test file into the target space $(Y, \sigma)$. Namely, we compute $y_i = f(\phi(u_i))$ for all $u_i \in U_\text{test}$.
+
+Then, we utilize standard agglomerative hierarchical clustering methods to organize the embedded files into a tree. Our method supports the various clustering schemes listed in \cite{müllner2011modernhierarchicalagglomerativeclustering}, including \texttt{single}, \texttt{complete}, and \texttt{Ward}. We use \texttt{scipy.cluster.hierarchy.linkage} from SciPy to perform the clustering. The resulting tree is used to produce a directory structure in which the files are then placed.
+
+The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exactly how many directories are to appear in the final directory hierarchy. The top \texttt{num\_dirs} longest edges in the cluster tree are ``cut''; at each cut, a new directory is created to contain the subtree.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    % Define nodes
+    \node (A) at (0,0) {\texttt{root\_dir}};
+    \node (B) at (-2,-2) {$B$};
+    \node (C) at (2,-1.5) {$C$};
+    \node (D) at (-3,-5) {\texttt{file1}};
+    \node (E) at (-1,-4) {\texttt{file2}};
+    \node (F) at (3.5,-4) {$F$};
+    \node (G) at (1.5,-3) {\texttt{file3}};
+    \node (H) at (2.5,-5.3) {\texttt{file4}};
+    \node (I) at (4,-5.5) {\texttt{file5}};
+
+    % Draw edges with varying lengths
+    \draw (A) -- node[midway, left] {$1.5$} (B);
+    \draw (A) -- node[midway, right] {$1$} (C);
+    \draw (B) -- node[midway, left] {$2$} (D);
+    \draw (B) -- node[midway, right] {$1$} (E);
+    \draw (C) -- node[midway, right] {$1.5$} (F);
+    \draw (C) -- node[midway, left] {$0.5$} (G);
+    \draw (F) -- node[midway, left] {$1$} (H);
+    \draw (F) -- node[midway, right] {$1$} (I);
+
+    % Cut the top 3 longest edges
+    % Edges: (A)-(B), (B)-(D), (C)-(F)
+    \draw[red, thick] ($(A)!0.5!(B)$) -- ++(135:0.2) -- ++(-45:0.4);
+    \draw[red, thick] ($(B)!0.5!(D)$) -- ++(135:0.2) -- ++(-45:0.4);
+    \draw[red, thick] ($(C)!0.5!(F)$) -- ++(45:0.2) -- ++(-135:0.4);
+
+    % Draw circles around subtrees in new directories
+    \draw[dashed] (-2.3,-3.6) circle (2.2);
+    \draw[dashed] (-3.0,-4.7) circle (0.8);
+    \draw[dashed] (3.3,-4.9) circle (1.5);
+
+    % Surround whole tree in a rectangle
+    \draw[dashed] (-4.8,-6.5) rectangle (5.1,0.5);
+
+  \end{tikzpicture}
+  \caption{A tree with varying branch lengths. The top \texttt{num\_dirs=3} longest edges are cut to create new directories (shown in dashed lines).}
+  \label{fig:example-tree-with-cuts}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \begin{BVerbatim}
+    root_dir
+    ├── dir1
+    │   ├── dir2
+    │   │   └── file1
+    │   └── file2
+    ├── dir3
+    │   ├── file4
+    │   └── file5
+    └── file3
+  \end{BVerbatim}
+  \caption{The directory structure produced from the tree in Figure \ref{fig:example-tree-with-cuts}.}
+  \label{fig:example-directory-structure}
+\end{figure}
+
+\subsection{Time Complexity Analysis}
 
 \section{Experiments}
 
