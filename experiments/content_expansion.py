@@ -2,7 +2,7 @@ from forg import ExpansionMode, train
 
 train(
     "../data/repos/react",
-    run_label=f"content_expansion-hidden-avg-no-suffix",
+    run_label="content_expansion-hidden-avg-no-suffix",
     samples=3000,
     epochs=100_000,
     expansion_batch_size=64,
@@ -13,7 +13,7 @@ train(
 
 train(
     "../data/repos/react",
-    run_label=f"content_expansion-hidden-last-no-suffix",
+    run_label="content_expansion-hidden-last-no-suffix",
     samples=3000,
     epochs=100_000,
     expansion_batch_size=64,
@@ -24,7 +24,7 @@ train(
 
 train(
     "../data/repos/react",
-    run_label=f"content_expansion-hidden-last-with-suffix",
+    run_label="content_expansion-hidden-last-with-suffix",
     samples=3000,
     epochs=100_000,
     expansion_batch_size=64,
