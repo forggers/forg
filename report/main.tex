@@ -88,7 +88,7 @@ A metric space is a set $X$ equipped with a distance function $\rho: X \times X 
 
 Consider a set $X$ where elements are nodes in a tree. A valid distance function $\rho$ can be defined as the length of the shortest path between two nodes. This satisfies the properties of a metric space.
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     % Nodes
@@ -132,7 +132,7 @@ The Poincaré disk model of hyperbolic space maps points in the hyperbolic plane
 
 Geodesics are defined as the shortest paths between two points. In the Poincaré disk model, geodesics are arcs of circles that intersect the boundary of the disk at right angles. For any two points in the Poincaré disk, there is a unique geodesic connecting them.
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     % Draw the unit circle (Poincaré disk boundary)
@@ -267,7 +267,7 @@ Recall that an MLP outputs vectors in $\mathbb R^D$. This is fine for Euclidean 
 
 The simplest strategy is to clip the output norms to $1-\epsilon$, where $\epsilon$ is sufficiently large to avoid numeric issues that arise when computing distances near the edge of the Poincaré disk. This strategy is problematic in practice because embedded points get ``stuck'' at the boundary of the disk, due to embedding gradients being zero in the radial direction after clipping.
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     % Draw the unit circle (Poincaré disk boundary)
@@ -313,7 +313,7 @@ We instead choose to use a very similar transformation:
   g(r) = \sqrt{1 - e^{-r^2}} \; . \label{eq:radial-transformation}
 \end{align}
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     \begin{axis}[
@@ -352,7 +352,7 @@ This particular formulation has the advantage of simplifying the Poincaré dista
   = \text{arcosh} \qty[1 + 2 \frac{\norm{g(y_i) - g(y_j)}^2}{e^{-\norm{y_i}^2} e^{-\norm{y_j}^2}}] \; .
 \end{align}
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     % Draw the unit circle (Poincaré disk boundary)
@@ -384,7 +384,7 @@ Then, we utilize standard agglomerative hierarchical clustering methods to organ
 
 The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exactly how many directories are to appear in the final directory hierarchy. The top \texttt{num\_dirs} longest edges in the cluster tree are ``cut''; at each cut, a new directory is created to contain the subtree.
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{tikzpicture}
     % Define nodes
@@ -427,7 +427,7 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
   \label{fig:example-tree-with-cuts}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[ht]
   \centering
   \begin{BVerbatim}
     root_dir
