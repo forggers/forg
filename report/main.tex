@@ -183,7 +183,7 @@ Our method consists of three parts:
 
 \begin{enumerate}
   \item Map files to feature vectors with the help of a pre-trained LLM. Namely, given a file $u_i$, the feature vector $x_i = \phi(u_i)$ should capture useful semantic information about the file. There are no learned parameters in this part.
-  \item Learn a function $f$ that embeds file feature vectors into a low-dimensional metric space $(Y, \sigma)$. The mapping should preserve the true tree distance between files. We experiment with Euclidean and hyperbolic target spaces. Fuerthermore, we take $f$ to be an MLP.
+  \item Learn a function $f$ that embeds file feature vectors into a low-dimensional metric space $(Y, \sigma)$. The mapping should preserve the true tree distance between files. We experiment with Euclidean and hyperbolic target spaces. Furthermore, we take $f$ to be an MLP.
   \item Organize a given set of files $\qty{u_1, u_2, \dots}$ hierarchically, with the end goal of creating a directory tree containing the files (physically, on disk). New/unseen files are feature expanded via $\phi$ and embedded into $(Y, \sigma)$ using the learned function $f$. Hierarchical clustering is then performed on the embedded files to create the directory tree.
 \end{enumerate}
 
