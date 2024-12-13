@@ -43,25 +43,12 @@
   \vskip 1em}
 \makeatother
 
-\title{Computing Hierarchical Embeddings of File Contents Using File System Tree Distance Metrics}
+\title{\textsc{Forg}: File Organization by Embedding Files According to File Tree Distance}
 \author{Alex Chen, Gilbert Yang, Geoffrey Wu}
 
 \begin{document}
 
 \maketitle
-
-% \section{Introduction}
-
-% \cite{sarkar2011low}
-% \cite{sala2018representation}
-% \cite{murtagh2012algorithms}
-% \cite{paszke2019pytorch}
-% \cite{llama3modelcard}
-% \cite{celinska2024numerical}
-
-% \begin{align}
-%   \min_{f} \sum_{(u_i,u_j) \in U^2} \Big[ \rho(f(\phi(u_i)),f(\phi(u_j)) - T(u_i,u_j) \Big]^2 \;  \label{eq:objective}
-% \end{align}
 
 \section{Introduction}
 
@@ -176,9 +163,7 @@ We propose a novel method that takes as input an arbitrary set of computer files
 
 Such a model can be trained on different example repositories to produce models that perform well in different contexts. For example, training on GitHub repositories will produce a model that organizes files in a way that is useful for software projects. Meanwhile, training on, say, the filesystem of an operating system will produce a model that is better adapted to organizing non-text (binary) files. The latter case may be particularly useful for, say, organizing a user's internet downloads.
 
-  % TODO: move above description/motivation to introduction???
-
-  [Flow chart of the three parts]
+% TODO: move above description/motivation to introduction???
 
 Our method consists of three parts:
 
@@ -232,7 +217,7 @@ Our method consists of three parts:
       \draw (dir2) -- (file4);
     \end{tikzpicture}
   \end{align*}
-  \caption{TODO} % TODO
+  \caption{High-level flow chart of \textsc{Forg}.}
 \end{figure}
 
 
@@ -499,7 +484,9 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
 
 We evaluate our method's performance in the context of organizing files from GitHub repositories. We focus on React, an MIT-licensed JavaScript library built by Meta for building user interfaces. We chose this repository because React is one of the most popular libraries among developers. Furthermore, the repository contains a variety of file types, organized according to good practices.
 
-The React repository has $N=6922$ total files. In our experiments, we randomly select 3000 files using a fixed seed, then partition them into 80\% training data and 20\% test data. We analyze the test cost across training epochs, using the MSE formulation in \eqref{eq:mse-cost}. In our experiments, we know the true tree distances between test files, which lets us compute the test cost.
+The React repository has $N=6922$ total files. In our experiments, we randomly select 3000 files using a fixed seed, then partition them into 80\% training data and 20\% test data. We analyze the test cost across training epochs, using the MSE formulation in \eqref{eq:mse-cost}. In our experiments, we know the true tree distances between test files, which lets us compute the test cost. All runs were performed using Google's Gemma 2B LLM for feature expansion, unless otherwise noted.
+
+We find that the convergence of Hyperbolic embeddings is quite sensitive to learning rate. Using the Adam optimizer, the learning rate must be within the realm of $10^{-4}$.
 
 \subsection{Double Descent}
 
@@ -516,14 +503,14 @@ We also find that higher dimensionality spaces lead to lower test costs, for bot
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/metric_and_dimensionality_short_term.pdf}
-  \caption{TODO} % TODO
+  \caption{These are the test loss curves across Euclidean and hyperbolic metrics, with varying dimensionality. The test losses reach an initial minimum after a few hundred epochs. In the short term, there is no distinct difference between Euclidean and hyperbolic metrics.}
   \label{fig:metric-and-dimensionality-short-term}
 \end{figure}
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/metric_and_dimensionality_long_term.pdf}
-  \caption{TODO} % TODO
+  \caption{In the long term (tens of thousands of epochs), the test losses reach a new minimum. For the hyperbolic metric, the long-term minimum is lower than the short-term minimum. Increasing the dimensionality of the target space leads to lower test costs, but the effect is less pronounced in the hyperbolic case.}
   \label{fig:metric-and-dimensionality-long-term}
 \end{figure}
 
@@ -536,7 +523,7 @@ We also find that higher dimensionality spaces lead to lower test costs, for bot
     \centering
     \includegraphics[width=\linewidth]{figures/long_term.png}
   \end{minipage}
-  \caption{TODO} % TODO
+  \caption{Comparison of Poincaré embeddings in the short term (left) and long term (right). The embeddings are plotted pre-normalization (using $g$), which explains why their norms are not bounded to $[0, 1)$. Recall that embeddings larger than $1$ are ``smoothly compressed'' into the Poincaré disk. This means that in the long-term plot, the normalized embeddings are very close to the boundary of the disk.}
   \label{fig:short-and-long-term-embeddings}
 \end{figure}
 
@@ -547,7 +534,7 @@ We analyze the performance with respect to the choice of LLM used in the feature
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/expansion_model.pdf}
-  \caption{TODO} % TODO
+  \caption{Comparison of using different LLMs for feature expansion. We use the 8B-parameter Llama 3 model from Meta and the 2B-parameter Gemma model from Google. The 8B-parameter model produces lower test costs. The curves show the min, max, and mean costs across three runs.}
   \label{fig:expansion-model}
 \end{figure}
 
@@ -556,7 +543,7 @@ Furthermore, we benchmark the various string-to-feature constructions $f_s$ (i.e
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\textwidth]{figures/content_expansion.pdf}
-  \caption{TODO} % TODO
+  \caption{Comparison of different string-to-feature constructions $f_s$. Simply averaging the entire final hidden state produces the best feature vectors. Still, the \emph{PromptEOL} strategy from \cite{jiang2023scalingsentenceembeddingslarge} is useful when using just the last token embedding.}
   \label{fig:content-expansion}
 \end{figure}
 
@@ -573,7 +560,7 @@ We qualitatively analyze the embeddings produced by our method. Figure \ref{fig:
     \centering
     \includegraphics[width=\linewidth]{figures/react_test.png}
   \end{minipage}
-  \caption{TODO} % TODO
+  \caption{Visualization of how hyperbolic embeddings of files from the six primary directories in the React repository cluster together. The right plot shows that the embedding function learns to group together files from the same directory, even for unseen test files.}
   \label{fig:React-training-and-test-embeddings}
 \end{figure}
 
@@ -588,56 +575,53 @@ We also look at the qualitative differences in embeddings produced by the MSE an
     \centering
     \includegraphics[width=\linewidth]{figures/tsne_cost.png}
   \end{minipage}
-  \caption{TODO} % TODO
+  \caption{Comparison of (pre-normalization) hyperbolic embeddings produced by the MSE (left) and t-SNE (right) cost functions. In the MSE case, the embeddings are organized into distinct rings, which reflects the hierarchical structure of the file system tree. In the t-SNE case, higher importance is given to local structure, leading to \emph{islands} of embeddings.}
   \label{fig:cost-function-emnbeddings}
 \end{figure}
 
 \subsection{Transfer Learning}
 
-We take the embedding model $f$ trained on the React repository and apply it to the Forg repository (i.e., the very code used in all these experiments). The resulting file tree in figure \ref{fig:forg-directory-structure} shows that the model produces a very reasonable directory structure (keep in mind that it was trained on a JavaScript repository and applied to a Python repository).
+We take the embedding model $f$ trained on the React repository and apply it to the \textsc{Forg} repository (i.e., the very code used in all these experiments). The resulting file tree in figure \ref{fig:forg-directory-structure} shows that the model produces a very reasonable directory structure (keep in mind that it was trained on a JavaScript repository and applied to a Python repository).
 
 \begin{figure}[ht]
   \centering
   % \begin{noindent}
   \begin{BVerbatim}
-    cluster
+    [root]
     ├── [dir]
     │   ├── [dir]
-    │   │   └── settings.json
+    │   │   └── embedding_metric.cpython-312.pyc
     │   ├── [dir]
-    │   │   ├── [dir]
-    │   │   │   └── __init__.py
-    │   │   ├── color-embeddings.ipynb
-    │   │   ├── content_expansion.py
-    │   │   ├── costs.py
-    │   │   ├── embedding_cache.py
-    │   │   ├── feature.py
-    │   │   ├── file.py
-    │   │   ├── historical_transfer.py
-    │   │   ├── train.py
-    │   │   └── tree_metric.py
-    │   ├── cluster.py
-    │   ├── cluster_react.ipynb
-    │   ├── create_figures.ipynb
-    │   ├── forg.png
-    │   ├── pyproject.toml
-    │   └── utils.py
+    │   │   └── costs.cpython-312.pyc
+    │   ├── [dir]
+    │   │   └── tree_metric.cpython-312.pyc
+    │   ├── [dir]
+    │   │   └── feature.cpython-312.pyc
+    │   ├── __init__.cpython-312.pyc
+    │   ├── [dir]
+    │   │   └── embedding_cache.cpython-312.pyc
+    │   ├── [dir]
+    │   │   └── file.cpython-312.pyc
+    │   ├── cluster.cpython-312.pyc
+    │   ├── embedding.cpython-312.pyc
+    │   ├── metric.cpython-312.pyc
+    │   ├── train.cpython-312.pyc
+    │   └── utils.cpython-312.pyc
     └── [dir]
-        ├── [dir]
-        │   ├── [dir]
-        │   │   └── README.md
-        │   └── [dir]
-        │       └── extensions.json
-        └── [dir]
-            ├── [dir]
-            │   └── cost.py
-            ├── embedding.py
-            ├── embedding_metric.py
-            ├── expansion_model.py
-            └── metric_and_dimensionality.py
+        ├── __init__.py
+        ├── cluster.py
+        ├── costs.py
+        ├── embedding.py
+        ├── embedding_cache.py
+        ├── embedding_metric.py
+        ├── feature.py
+        ├── file.py
+        ├── train.py
+        ├── tree_metric.py
+        └── utils.py
   \end{BVerbatim}
   % \end{noindent}
-  \caption{TODO} % TODO
+  \caption{The directory structure produced by the model when applied to the \textsc{Forg} repository (Ward linkage, \texttt{num\_dirs=7}). The model was trained on the React repository. Observe that the model correctly separates \texttt{.py} source files and \texttt{.pyc} compiled files.}
   \label{fig:forg-directory-structure}
 \end{figure}
 
@@ -658,7 +642,7 @@ We also study the model's performance when trained on a historical snapshot of t
     2022 & 2424                          & 23.853 \\
     \bottomrule
   \end{tabular}
-  \caption{TODO} % TODO
+  \caption{Performance of the model when trained on historical snapshots of the React repository (earliest major release in each indicated year) and evaluated on the current React repository (December 2024). The MSE test cost is larger when more years of change have occurred between training and testing.}
   \label{tab:historical-transfer}
 \end{table}
 
