@@ -1,5 +1,6 @@
 import hashlib
 import os
+import shutil
 from enum import Enum
 from typing import Annotated, cast
 
@@ -41,7 +42,15 @@ def cluster_to_disk(
     linkage: Linkage = DEFAULT_LINKAGE,
 ):
     if os.path.exists(destination_dir):
-        raise FileExistsError(destination_dir)
+        # safe to delete destination_dir only if it contains only symlinks
+        for dirpath, _dirnames, filenames in os.walk(destination_dir):
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                if not os.path.islink(filepath):
+                    raise ValueError(
+                        f"Destination directory {destination_dir} is not empty"
+                    )
+        shutil.rmtree(destination_dir)
 
     embeddings = embedding(files)
     dist_matrix = embedding_metric.distance_matrix(embeddings)
