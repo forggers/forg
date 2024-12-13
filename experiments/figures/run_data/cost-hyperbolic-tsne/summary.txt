@@ -1,0 +1,19 @@
+Best test cost: -6.396679401397705
+Best epoch: 82378
+
+Arguments:
+  run_label: cost-hyperbolic-tsne
+  repo_dir: ../data/repos/react
+  samples: 3000
+  train_split: 0.8
+  epochs: 100000
+  lr: 0.0001
+  expansion_model_name: google/gemma-2-2b
+  expansion_batch_size: 64
+  content_expansion_mode: hidden-avg
+  content_expansion_suffix: ""
+  D: 2
+  width: 512
+  depth: 2
+  metric: hyperbolic
+  cost: tsne
