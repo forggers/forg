@@ -451,28 +451,52 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\textwidth]{output/metric_and_dimensionality_short_term.pdf}
+  \includegraphics[width=0.7\textwidth]{figures/metric_and_dimensionality_short_term.pdf}
   \caption{TODO} % TODO
   \label{fig:metric-and-dimensionality-short-term}
 \end{figure}
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\textwidth]{output/metric_and_dimensionality_long_term.pdf}
+  \includegraphics[width=0.7\textwidth]{figures/metric_and_dimensionality_long_term.pdf}
   \caption{TODO} % TODO
   \label{fig:metric-and-dimensionality-long-term}
 \end{figure}
 
 \begin{figure}[ht]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/react_train.png}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/react_test.png}
+  \end{minipage}
+  \caption{TODO} % TODO
+\end{figure}
+
+\begin{figure}[ht]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/short_term.png}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/long_term.png}
+  \end{minipage}
+  \caption{TODO} % TODO
+\end{figure}
+
+\begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\textwidth]{output/expansion_model.pdf}
+  \includegraphics[width=0.7\textwidth]{figures/expansion_model.pdf}
   \caption{TODO} % TODO
   \label{fig:expansion-model}
 \end{figure}
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\textwidth]{output/content_expansion.pdf}
+  \includegraphics[width=0.7\textwidth]{figures/content_expansion.pdf}
   \caption{TODO} % TODO
   \label{fig:content-expansion}
 \end{figure}
@@ -495,6 +519,62 @@ The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exac
   \label{tab:example}
 \end{table}
 
+\begin{figure}[ht]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/mse_cost.png}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/tsne_cost.png}
+  \end{minipage}
+  \caption{TODO} % TODO
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  % \begin{noindent}
+  \begin{BVerbatim}
+    cluster
+    ├── [dir]
+    │   ├── [dir]
+    │   │   └── settings.json
+    │   ├── [dir]
+    │   │   ├── [dir]
+    │   │   │   └── __init__.py
+    │   │   ├── color-embeddings.ipynb
+    │   │   ├── content_expansion.py
+    │   │   ├── costs.py
+    │   │   ├── embedding_cache.py
+    │   │   ├── feature.py
+    │   │   ├── file.py
+    │   │   ├── historical_transfer.py
+    │   │   ├── train.py
+    │   │   └── tree_metric.py
+    │   ├── cluster.py
+    │   ├── cluster_react.ipynb
+    │   ├── create_figures.ipynb
+    │   ├── forg.png
+    │   ├── pyproject.toml
+    │   └── utils.py
+    └── [dir]
+        ├── [dir]
+        │   ├── [dir]
+        │   │   └── README.md
+        │   └── [dir]
+        │       └── extensions.json
+        └── [dir]
+            ├── [dir]
+            │   └── cost.py
+            ├── embedding.py
+            ├── embedding_metric.py
+            ├── expansion_model.py
+            └── metric_and_dimensionality.py
+  \end{BVerbatim}
+  % \end{noindent}
+  \caption{TODO} % TODO
+  \label{fig:forg-directory-structure}
+\end{figure}
 
 \section{Conclusion}
 
