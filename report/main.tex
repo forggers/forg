@@ -188,6 +188,54 @@ Our method consists of three parts:
   \item Organize a given set of files $\qty{u_1, u_2, \dots}$ hierarchically, with the end goal of creating a directory tree containing the files (physically, on disk). New/unseen files are feature expanded via $\phi$ and embedded into $(Y, \sigma)$ using the learned function $f$. Hierarchical clustering is then performed on the embedded files to create the directory tree.
 \end{enumerate}
 
+\begin{figure}[ht]
+  \begin{align*}
+    \begin{Bmatrix}
+      \texttt{file1.ext} \\
+      \texttt{file2.ext} \\
+      \vdots             \\
+      \texttt{fileN.ext}
+    \end{Bmatrix}
+    \xrightarrow{\text{fixed LLM}}
+    \begin{Bmatrix}
+      \langle \dots \text{features} \dots \rangle_1 \\
+      \langle \dots \text{features} \dots \rangle_2 \\
+      \vdots                                        \\
+      \langle \dots \text{features} \dots \rangle_N
+    \end{Bmatrix}
+    \xrightarrow{\text{MLP}}
+    \begin{tikzpicture}[baseline={(0,-0.1)}]
+      % unit circle
+      \draw[thick] (0,0) circle (1);
+      % some points
+      \fill (0.5,0.5) circle (0.05);
+      \fill (-0.2,0.4) circle (0.05);
+      \fill (0.3,-0.7) circle (0.05);
+      \fill (-0.6,-0.3) circle (0.05);
+    \end{tikzpicture}
+    \xrightarrow{\text{h-clustering}}
+    \begin{tikzpicture}[baseline={(0,-1.1)}]
+      % tree nodes
+      \node (root) at (0,0) {\texttt{root}};
+      \node (dir1) at (-1,-1) {\texttt{dir1}};
+      \node (dir2) at (1,-1) {\texttt{dir2}};
+      \node (file1) at (-1.5,-2) {\texttt{f1}};
+      \node (file2) at (-0.5,-2) {\texttt{f2}};
+      \node (file3) at (0.5,-2) {\texttt{f3}};
+      \node (file4) at (1.5,-2) {\texttt{f4}};
+      % tree edges
+      \draw (root) -- (dir1);
+      \draw (root) -- (dir2);
+      \draw (dir1) -- (file1);
+      \draw (dir1) -- (file2);
+      \draw (dir2) -- (file3);
+      \draw (dir2) -- (file4);
+    \end{tikzpicture}
+  \end{align*}
+  \caption{TODO} % TODO
+\end{figure}
+
+
 \subsection{Summary of Notation}
 
 Below is a summary of the notation that is used throughout the rest of the report:
