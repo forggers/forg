@@ -1,5 +1,4 @@
-from forg.feature import ExpansionMode
-from forg.train import train
+from forg import ExpansionMode, train
 
 train(
     "../data/repos/react",

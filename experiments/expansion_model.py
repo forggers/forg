@@ -1,4 +1,4 @@
-from forg.train import train
+from forg import train
 
 for expansion_model_name in ["meta-llama/Meta-Llama-3-8B", "google/gemma-2-2b"]:
     for run in range(3):  # run multiple times

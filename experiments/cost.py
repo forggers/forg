@@ -1,4 +1,4 @@
-from forg.train import CostType, EmbeddingMetricType, train
+from forg import CostType, EmbeddingMetricType, train
 
 for metric in [EmbeddingMetricType.EUCLIDEAN, EmbeddingMetricType.HYPERBOLIC]:
     for cost in [CostType.DISTANCE_MSE, CostType.TSNE]:

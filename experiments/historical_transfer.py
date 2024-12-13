@@ -3,9 +3,7 @@ import os
 
 import torch
 
-from forg.costs import DistanceMSECost
-from forg.train import TrainResult, train
-from forg.utils import load_files
+from forg import DistanceMSECost, TrainResult, load_files, train
 
 raw_test_files = load_files("../data/repos/react")
 csv_file_path = "../dev/historical_transfer.csv"
