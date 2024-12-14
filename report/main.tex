@@ -131,7 +131,6 @@ Large language models (LLMs) are trained on vast amounts of internet text to lea
 
 Ultimately, an LLM ``sees'' tokens, so the choice of vocabulary is crucial. One common way to choose tokens is to consider a sample body of text and choose the top $V$ most frequently occurring $n$-grams (over all $n\ge 1$). This results in many tokens being parts of words, which can be useful for capturing the structure of natural language.
 
-% TODO cite something for transformer architecture
 Most LLMs today use the transformer architecture, which uses self-attention mechanisms to model dependencies between tokens. First, the model learns token embeddings. In addition, the model learns projection matrices that map tokens into a latent space that better captures similarity structures. Each layer of the transformer uses this mechanism to allow tokens to ``pay attention'' to other tokens. As the input is passed through the layers, the model refines the meaning of each token in the context of the entire input.
 
 After being trained on the internet, the model learns an internal representation of language that allows it to best complete input text. Ultimately, the distribution of candidate tokens output by an LLM is a function of the final hidden state of the model (i.e., the refined token embeddings at the last layer). Therefore, this final hidden state contains an abstract representation of the input text---suitable for downstream NLP tasks.
