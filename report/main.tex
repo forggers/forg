@@ -382,9 +382,7 @@ Let $s \in \Sigma^*$ be the input string to $\phi_s$. Furthermore, we consider t
 \begin{align}
   \phi_s(s) = \Big( \text{count}_1(s), \text{count}_2(s), \dots, \text{count}_t(s) \Big) \; ,
 \end{align}
-where $\text{count}_i(s)$ is the number of times the $i$-th most frequent token appears in the tokenized version of $s$. This construction yields $d = 2t$.
-
-Roughly, this approach captures an intuition that token counts capture enough semantic meaning to be useful for predicting file system tree distances.
+where $\text{count}_i(s)$ is the number of times the $i$-th most frequent token appears in the tokenized version of $s$. This construction yields $d = 2t$. Roughly, this approach reflects the intuition that token counts capture enough semantic meaning to be useful for predicting file system tree distances.
 
 \subsubsection{String-to-Feature Construction 2: Last Hidden State of LLM}
 
@@ -441,9 +439,9 @@ Finally, we propose a procedure to organize files hierarchically. Here, we consi
 
 Using the fixed feature expansion and learned embedding function, we can embed each test file into the target space $(Y, \sigma)$. Namely, we compute $y_i = f(\phi(u_i))$ for all $u_i \in U_\text{test}$.
 
-Then, we utilize standard agglomerative hierarchical clustering methods to organize the embedded files into a tree. Our method supports the various clustering schemes listed in \cite{müllner2011modernhierarchicalagglomerativeclustering}, including \texttt{single}, \texttt{complete}, and \texttt{Ward}. We use \texttt{scipy.cluster.hierarchy.linkage} from SciPy to perform the clustering. The resulting tree is used to produce a directory structure in which the files are then placed.
+Then, we utilize standard agglomerative hierarchical clustering methods to organize the embedded files into a tree. Our method supports the various clustering schemes listed in \cite{müllner2011modernhierarchicalagglomerativeclustering}, including \texttt{single}, \texttt{complete}, and \texttt{Ward}. We use \texttt{scipy.cluster.hierarchy.linkage} from SciPy to perform the clustering. The resulting tree is used to produce a directory structure into which the files are then placed.
 
-The user specifies a \texttt{num\_dirs} parameter (e.g., 10) that specifies exactly how many directories are to appear in the final directory hierarchy. The top \texttt{num\_dirs} longest edges in the cluster tree are ``cut''; at each cut, a new directory is created to contain the subtree.
+The user provides a \texttt{num\_dirs} parameter (e.g., 10) that specifies exactly how many directories are to appear in the final directory hierarchy. The top \texttt{num\_dirs} longest edges in the cluster tree are ``cut''; at each cut, a new directory is created to contain the subtree.
 
 \begin{figure}[H]
   \centering
@@ -553,7 +551,7 @@ Before focusing on React, we run our method on the various repositories listed i
     \centering
     \includegraphics[width=\linewidth]{figures/basic_test_cost_var.pdf}
   \end{minipage}
-  \caption{Test costs across training epochs for React, PyTorch, and the Ubuntu \texttt{/var} directory. The test costs decrease across epochs, indicating that the learned MLP is able to generalize. The shaded region represents the minimum and maximum test costs across five runs. These runs use the hyperbolic metric with $D=2$. The test cost is especially low for \texttt{/var}, possibly because the directory structure is flatter.}
+  \caption{Test costs across training epochs for React, PyTorch, and the Ubuntu \texttt{/var} directory. The test costs decrease across epochs, indicating that the learned MLP is able to generalize. The curves show the min, max, and mean costs across five runs. These runs use the hyperbolic metric with $D=2$. The test cost is especially low for \texttt{/var}, possibly because the directory structure is flatter.}
   \label{fig:basic-test-costs}
 \end{figure}
 
@@ -593,7 +591,7 @@ We also find that higher dimensionality spaces lead to lower test costs, for bot
     \centering
     \includegraphics[width=\linewidth]{figures/long_term.png}
   \end{minipage}
-  \caption{Comparison of Poincaré embeddings in the short term (left) and long term (right). The embeddings are plotted pre-normalization (using $g$), which explains why their norms are not bounded to $[0, 1)$. Recall that embeddings larger than $1$ are ``smoothly compressed'' into the Poincaré disk. This means that in the long-term plot, the normalized embeddings are very close to the boundary of the disk.}
+  \caption{Comparison of Poincaré embeddings in the short term (left) and long term (right). The embeddings are plotted pre-normalization (using $g$), which explains why their norms are not bounded to $[0, 1)$. Recall that embeddings larger than $1$ are ``smoothly compressed'' into the Poincaré disk. This means that in the long-term plot, the normalized embeddings are actually very close to the boundary of the disk.}
   \label{fig:short-and-long-term-embeddings}
 \end{figure}
 
@@ -710,7 +708,7 @@ We also study the model's performance when trained on a historical snapshot of t
     2022                   & 2424                          & 23.853             \\
     \bottomrule
   \end{tabular}
-  \caption{Performance of the model when trained on historical snapshots of the React repository (earliest major release in each indicated year) and evaluated on the current React repository (December 2024). The MSE test cost is larger when more years of change have occurred between training and testing.}
+  \caption{Performance of the model when trained on historical snapshots of the React repository (earliest major release in each indicated year) and evaluated on the current React repository (November 2024). The MSE test cost is larger when more years of change have occurred between training and testing.}
   \label{tab:historical-transfer}
 \end{table}
 
