@@ -284,7 +284,7 @@ In addition, when training the embedding function, we learn a \emph{scale parame
   \texttt{SCALE} * \sigma(y_i, y_j)
 \end{align}
 
-A larger scale parameter \texttt{SCALE} keeps the points closer to the origin on the disk, and vice versa. When training, we observe that the scale starts decreasing and points start being pushed away from the origin to compensate. This is usually a good thing: the embeddings start leveraging the higher-curvature regions of the space. But leveraging the high-curvature edge regions too much can cause numerical issues, so we lower-bound the scale parameter to avoid this issue.
+A larger scale parameter \texttt{SCALE} keeps the points closer to the origin on the disk, and vice versa. When training, we observe that the scale starts decreasing and points start being pushed away from the origin to compensate. This is usually a good thing: the embeddings start leveraging the edge of the disk, where there is more \emph{space} to fit tree-like structures. However, computing distances of points too close to the boundary leads to numerical issues, so we lower-bound the scale parameter to avoid this issue.
 
 \section{Methodology}
 
