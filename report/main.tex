@@ -524,7 +524,7 @@ We find that the convergence of Hyperbolic embeddings is quite sensitive to lear
 
 \subsection{Testing on Various Repositories}
 
-Before focusing on React, we run our method on the various repositories listed in Table \ref{tab:repositories}. We observe that the test cost decreases across epochs, indicating that the learned MLP is able to generalize. However, as shown in Figure \ref{fig:basic-test-costs}, the test cost during training is somewhat sensitive to the random initialization of the MLP weights. Across five runs, the minimum and maximum test cost across epochs differ by roughly 1. For each repository, we sample 3000 files, partitioning them into 80\% training data and 20\% test data.
+Before focusing on React, we run our method on the various repositories listed in Table \ref{tab:repositories}. We observe that the test cost decreases across epochs, indicating that the learned MLP is able to generalize. However, as shown in Figure \ref{fig:basic-test-costs}, the test cost during training is somewhat sensitive to the random initialization of the MLP weights. Across five runs, the minimum and maximum test costs across epochs differ by roughly 1. For each repository, we sample 3000 files, partitioning them into 80\% training data and 20\% test data.
 
 \begin{table}[H]
   \centering
@@ -537,7 +537,7 @@ Before focusing on React, we run our method on the various repositories listed i
     \texttt{/var}       & 5919                 & $0.7166 \pm 0.0407$    \\
     \bottomrule
   \end{tabular}
-  \caption{We test our method on three repositories. For React, dependencies (\texttt{node\_modules}) are \emph{excluded}. For PyTorch, dependencies (Git submodules) are \emph{included}. \texttt{/var} refers to the \texttt{/var} directory in a fresh Ubuntu 22.04 LTS installation. We use the main branches of the React and PyTorch repositories, cloned on November 2024.}
+  \caption{We test our method on three repositories. For React, dependencies (\texttt{node\_modules}) are \emph{excluded}. For PyTorch, dependencies (Git submodules) are \emph{included}. \texttt{/var} refers to the \texttt{/var} directory in a fresh Ubuntu 22.04 LTS installation. We use the main branches of the React and PyTorch repositories, cloned in November 2024.}
   \label{tab:repositories}
 \end{table}
 
