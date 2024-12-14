@@ -522,6 +522,42 @@ The React repository has $N=6922$ total files. In our experiments, we randomly s
 
 We find that the convergence of Hyperbolic embeddings is quite sensitive to learning rate. Using the Adam optimizer, the learning rate must be within the realm of $10^{-4}$.
 
+\subsection{Testing on Various Repositories}
+
+Before focusing on React, we run our method on the various repositories listed in Table \ref{tab:repositories}. We observe that the test cost decreases across epochs, indicating that the learned MLP is able to generalize. However, as shown in Figure \ref{fig:basic-test-costs}, the test cost during training is somewhat sensitive to the random initialization of the MLP weights. Across five runs, the minimum and maximum test cost across epochs differ by roughly 1. For each repository, we sample 3000 files, partitioning them into 80\% training data and 20\% test data.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lcr}
+    \toprule
+    \textbf{Repository} & \textbf{\# of Files} & \textbf{Min Test Cost} \\
+    \midrule
+    React               & 6922                 & $6.704 \pm 0.265$      \\
+    PyTorch             & 85767                & $4.64 \pm 0.143$       \\
+    \texttt{/var}       & 5919                 & $0.7166 \pm 0.0407$    \\
+    \bottomrule
+  \end{tabular}
+  \caption{We test our method on three repositories. For React, dependencies (\texttt{node\_modules}) are \emph{excluded}. For PyTorch, dependencies (Git submodules) are \emph{included}. \texttt{/var} refers to the \texttt{/var} directory in a fresh Ubuntu 22.04 LTS installation. We use the main branches of the React and PyTorch repositories, cloned on November 2024.}
+  \label{tab:repositories}
+\end{table}
+
+\begin{figure}[H]
+  \begin{minipage}{0.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/basic_test_cost_react.pdf}
+  \end{minipage}%
+  \begin{minipage}{0.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/basic_test_cost_pytorch.pdf}
+  \end{minipage}%
+  \begin{minipage}{0.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/basic_test_cost_var.pdf}
+  \end{minipage}
+  \caption{Test costs across training epochs for React, PyTorch, and the Ubuntu \texttt{/var} directory. The test costs decrease across epochs, indicating that the learned MLP is able to generalize. The shaded region represents the minimum and maximum test costs across five runs. These runs use the hyperbolic metric with $D=2$. The test cost is especially low for \texttt{/var}, possibly because the directory structure is flatter.}
+  \label{fig:basic-test-costs}
+\end{figure}
+
 \subsection{Double Descent}
 
 We observe a double descent phenomenon in the test cost, which is especially pronounced under the hyperbolic metric. Figure \ref{fig:metric-and-dimensionality-short-term} shows that the test cost reaches a minimum after a few hundred epochs. We call this the \emph{short-term} behavior. However, after a few orders of magnitude more epochs, the test cost starts to decrease again. We call this the \emph{long-term} behavior, as shown in Figure \ref{fig:metric-and-dimensionality-long-term}. After about 20K--100K epochs, the test cost reaches a new minimum.
@@ -667,14 +703,12 @@ We also study the model's performance when trained on a historical snapshot of t
   \centering
   \begin{tabular}{lcr}
     \toprule
-    \textbf{Training Year}
-         & \textbf{\# of Training Files}
-         & \textbf{Test Cost}                     \\
+    \textbf{Training Year} & \textbf{\# of Training Files} & \textbf{Test Cost} \\
     \midrule
-    2016 & 940                           & 42.205 \\
-    2018 & 801                           & 47.745 \\
-    2020 & 1673                          & 27.114 \\
-    2022 & 2424                          & 23.853 \\
+    2016                   & 940                           & 42.205             \\
+    2018                   & 801                           & 47.745             \\
+    2020                   & 1673                          & 27.114             \\
+    2022                   & 2424                          & 23.853             \\
     \bottomrule
   \end{tabular}
   \caption{Performance of the model when trained on historical snapshots of the React repository (earliest major release in each indicated year) and evaluated on the current React repository (December 2024). The MSE test cost is larger when more years of change have occurred between training and testing.}
