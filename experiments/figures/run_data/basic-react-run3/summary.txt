@@ -1,0 +1,19 @@
+Best test cost: 5.899318218231201
+Best epoch: 51254
+
+Arguments:
+  run_label: basic-react-run3
+  repo_dir: data/repos/react
+  samples: 3000
+  train_split: 0.8
+  epochs: 100000
+  lr: 0.0001
+  expansion_model_name: google/gemma-2-2b
+  expansion_batch_size: 64
+  content_expansion_mode: hidden-avg
+  content_expansion_suffix: ""
+  D: 2
+  width: 512
+  depth: 2
+  metric: hyperbolic
+  cost: distance_mse
